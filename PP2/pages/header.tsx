@@ -44,7 +44,7 @@ const Header: React.FC = () => {
           </li>
           <li>
             <Link
-              href="/about"
+              href="/create-template"
               style={{
                 color: 'black',
                 textDecoration: 'none',
@@ -54,7 +54,7 @@ const Header: React.FC = () => {
                 transition: 'background-color 0.3s',
               }}
             >
-              Browse
+              Create Template
             </Link>
           </li>
           <li>
@@ -104,7 +104,7 @@ const Header: React.FC = () => {
           </li>
           <li>
             <Link
-              href="/Log in"
+              href="/log-in"
               style={{
                 color: 'white',
                 textDecoration: 'none',

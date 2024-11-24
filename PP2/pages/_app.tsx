@@ -7,11 +7,14 @@ import Header from './header'; // Ensure this path is correct
 const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
   return (
     <div>
-      <main>
-        <Component {...pageProps} />
-      </main>
+      {/* Persistent Header */}
+      <Header />
+      
+      {/* Dynamic Page Content */}
+      <Component {...pageProps} />
     </div>
   );
 };
 
 export default MyApp;
+
