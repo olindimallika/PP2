@@ -6,7 +6,6 @@ import 'prismjs/components/prism-python.min.js';
 import 'prismjs/components/prism-c.min.js';
 import 'prismjs/components/prism-cpp.min.js';
 import 'prismjs/components/prism-java.min.js';
-import Header from './header'; // Import the Header component
 
 
 const Input: React.FC = () => {
@@ -110,9 +109,6 @@ const Input: React.FC = () => {
 
   return (
     <div>
-      {/* Header */}
-      <Header />
-
       <div className="form-container">
         <h1>Code Execution</h1>
 
