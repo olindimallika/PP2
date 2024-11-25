@@ -1,5 +1,5 @@
 import React from 'react';
-// import Header from './header'; // Import the Header component
+import Header from './header'; // Import the Header component
 
 const Home: React.FC = () => {
   return (

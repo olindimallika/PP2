@@ -1,11 +1,13 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from './auth-context'; // Update this path to where AuthContext is located
 
 const LoginPage: React.FC = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const router = useRouter();
+    const { login } = useAuth(); // Use the login function from AuthContext
 
     // Prefill email field from query parameter
     useEffect(() => {
@@ -36,13 +38,19 @@ const LoginPage: React.FC = () => {
             }
 
             const responseData = await response.json();
+
+            // Save the access token in localStorage
             localStorage.setItem('accessToken', responseData.accessToken);
+
+            // Update the global authentication state
+            login(); 
+
             setLoading(false);
             setError('');
 
-            // Redirect to callback URL or home page
+            // Redirect to the callback URL or clear it and go to home page
             const callbackUrl = router.query.callback as string;
-            router.push(callbackUrl || '/');
+            router.replace(callbackUrl || '/'); // Use replace to clear the history stack
         } catch (err: any) {
             setError(err.message || 'An error occurred');
             setLoading(false);
