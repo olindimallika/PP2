@@ -42,6 +42,8 @@ const LoginPage: React.FC = () => {
             // Save the access token in localStorage
             localStorage.setItem('accessToken', responseData.accessToken);
 
+            localStorage.setItem('userId', JSON.stringify(responseData.userId));
+
             // Update the global authentication state
             login(); 
 

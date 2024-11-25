@@ -73,13 +73,13 @@ const SignUpPage: React.FC = () => {
             }
 
             // On success, set the success message
-            const responseData = await response.json();
+            await response.json();
             setSuccess('Sign-up successful! Redirecting to log in...');
             setError(''); // Clear error messages
 
             // Redirect to the login page with the email prefilled
-            const callbackUrl = router.query.callback as string;
-            router.push(`/log-in?email=${formData.email}&callback=${callbackUrl || '/'}`);
+            //const callbackUrl = router.query.callback as string;
+            //router.push(`/log-in?email=${formData.email}&callback=${callbackUrl || '/'}`);
         } catch (err: any) {
             // Set error message on failure
             setError(err.message || 'An error occurred');

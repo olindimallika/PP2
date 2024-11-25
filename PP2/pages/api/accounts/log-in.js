@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         const accessToken = generateAccessToken({ userId: user.id, email: user.email, role: user.role });
         const refreshToken = generateRefreshToken({ userId: user.id, email: user.email, role: user.role });
 
-        return res.status(200).json( { accessToken, refreshToken });
+        return res.status(200).json( { userId: user.id, accessToken, refreshToken });
     } else {
         res.status(405).json({ message: 'Method not allowed.' });
     }
