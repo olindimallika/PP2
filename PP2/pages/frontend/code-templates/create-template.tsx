@@ -1,4 +1,4 @@
-import React, { FormEvent } from "react";
+import React, { FormEvent, useState, useRef } from "react";
 import Head from "next/head";
 import { useRouter } from 'next/router';
 
@@ -8,19 +8,29 @@ export default function Templates() {
     const [code, setCode] = React.useState("");
     const [tags, setTags] = React.useState("");
     const [blogs, setBlogs] = React.useState("");
+
     const [error, setError] = React.useState("");
     const [success, setSuccess] = React.useState("");
+    const [loading, setLoading] = useState<boolean>(false);
+
     const router = useRouter();
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const highlightRef = useRef<HTMLDivElement>(null);  
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         // preventing default form submission behaviour
         e.preventDefault();
+        setLoading(true);
 
         const token = localStorage.getItem('accessToken');
         if (!token) {
             setError('Must be logged in or sign up to create a code template.');
+            setLoading(false);
             return;
         }
+
+        const blogIdsArray = blogs.split(',').map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
 
         try {
             const response = await fetch('/api/code-templates/save', {
@@ -34,29 +44,38 @@ export default function Templates() {
                     explanation: explanation,
                     code: code,
                     tags: tags.split(","), 
-                    blogPostIds: blogs.split(",").map(Number)
+                    blogPostIds: blogIdsArray
                 })
             });
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Unauthorized. Please log in.');
+                }
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'An error occurred while creating the code template.');
             }
 
-            const responseData = await response.json();
-
-            const template = responseData.template;
-            localStorage.setItem('templateId', JSON.stringify(template.id));
-
+            await response.json();
             setSuccess('Template saved successfully!');
             setError('');                    
         } catch (err: any) {
             setError(err.message || 'An error occurred');
-        } 
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleClick = () => {
-        window.location.href='/view-templates';
+    const syncScroll = () => {
+        if (textareaRef.current && highlightRef.current) {
+            highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+            highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+        }
+    };
+
+    const generateLineNumbers = () => {
+        const lines = code.split('\n').length;
+        return Array.from({ length: lines }, (_, i) => i + 1).join('\n');
     };
 
     const redirectToLogIn = () => {
@@ -78,7 +97,7 @@ export default function Templates() {
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
                 {/* Form Container */}
                 <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-                    <h1 className="text-2xl font-bold text-center mb-6">Create Template</h1>
+                    <h1 className="text-2xl font-bold text-center mb-6 text-black">Create Template</h1>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Template Title Input */}
                         <input 
@@ -98,19 +117,35 @@ export default function Templates() {
                             value={explanation} 
                             onChange={(e) => setExplanation(e.target.value)}>
                         </input>
+                        
                         {/* Template Code */}
-                        <textarea 
-                            id="code" 
-                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
-                            rows={4} placeholder="Write your code here..." 
-                            value={code} onChange={(e) => setCode(e.target.value)}>
-                        </textarea>
+                        <div className="flex gap-5 mb-5">
+                            <div className="flex-1">
+                                <div className="flex relative bg-zinc-900 text-white border rounded-md overflow-y-auto font-mono text-sm">
+                                    <div className="bg-zinc-800 text-right select-none leading-6 py-2.5 pl-2.5 pt-2.5">
+                                        <pre>{generateLineNumbers()}</pre>
+                                    </div>
+                                        
+                                    <textarea
+                                        id="code"
+                                        ref={textareaRef}
+                                        className="bg-transparent caret-white text-white text-s overflow-y-auto w-full p-2.5 pt-3 outline-none"
+                                        value={code}
+                                        onChange={(e) => setCode(e.target.value)}
+                                        spellCheck={false}
+                                        placeholder="Enter your code here..."
+                                        onScroll={syncScroll}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Template Tags Input */}
                         <input 
                             type="text" 
                             id="tags" 
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
-                            placeholder="Tags: (eg. tag1, tag2, tag3,...)" 
+                            placeholder="Tags (comma-separated)" 
                             value={tags} onChange={(e) => setTags(e.target.value)}>
                         </input>
                         {/* Blog Post IDs Input */}
@@ -118,18 +153,23 @@ export default function Templates() {
                             type="text" 
                             id="blogPosts" 
                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
-                            placeholder="Blog Post IDs: (eg. 1, 2, 3,..)" 
+                            placeholder=" Blog Post IDs (comma-separated)" 
                             value={blogs} onChange={(e) => setBlogs(e.target.value)}>
                         </input>
-                        <button 
-                            className="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600">
-                            {"Save"}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className={`w-full bg-blue-500 text-white font-bold py-3 rounded-lg ${
+                                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+                            }`}
+                        >
+                            {loading ? 'Creating...' : 'Create Template'}
                         </button>
                             
                         {error && (
                             <div className="text-red-500 text-center mt-4">
                                 <p>{error}</p>
-                                {(error === 'Must be logged in or sign up to create a code template.' || error === 'Unauthorized or invalid token') && (
+                                {(error === 'Must be logged in or sign up to create a code template.') && (
                                     <div className="flex space-x-4 justify-center mt-2">
                                         <button
                                             onClick={redirectToLogIn}
@@ -149,18 +189,7 @@ export default function Templates() {
                             </div>
                         )}
                         {/* Success Message */}
-                        {success && (
-                            <div className="flex space-x-4 justify-center mt-2">
-                                <p className="text-green-500 text-center">{success}</p>
-                                <span>|</span>
-                                <button
-                                    onClick={handleClick}
-                                    className="text-blue-500 underline cursor-pointer"
-                                >
-                                    View templates here
-                                </button> 
-                            </div>
-                        )}
+                        {success && <p className="text-green-500 text-center">{success}</p>}
                     </form>
                 </div>
             </div>                

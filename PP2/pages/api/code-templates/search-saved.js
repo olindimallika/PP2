@@ -23,8 +23,10 @@ export default async function handler(req, res) {
                 userId: Number(userId),
             },
             select: {
+                id: true,
                 title: true,
                 explanation: true,
+                code: true,
                 tags: true,
             },
         })
@@ -34,14 +36,14 @@ export default async function handler(req, res) {
     // for searching through saved code templates
     } else if (req.method === 'POST') {
         const { userId } = req.query;
-        const { query } = req.body;
+        const { titleQuery, explanationQuery, tagQuery } = req.body;
+
+        if (!titleQuery && !explanationQuery && !tagQuery) {
+            return res.status(400).json({ error: 'At least one search field must be filled.' });
+        }
 
         if (!userId || isNaN(Number(userId))) {
             return res.status(400).json({ message: 'Please provide a user ID.' });
-        }
-
-        if (!query) {
-            return res.status(400).json({ error: 'Search query cannot be empty.' });
         }
 
         // allow a user to search through their saved templates by title, explanation, or tags
@@ -50,20 +52,23 @@ export default async function handler(req, res) {
             where: {
                 userId: Number(userId),
                 OR: [
-                    { title: { contains: query } },
-                    { explanation: { contains: query } },
-                    {
-                        tags: {
-                            some: {
-                                name: { contains: query }
+                    titleQuery ? { title: { contains: titleQuery } } : null,
+                    explanationQuery ? { explanation: { contains: explanationQuery } } : null,
+                    tagQuery 
+                        ? {
+                            tags: {
+                                some: {
+                                    name: { contains: tagQuery }
+                                }
                             }
-                        }
-                    }
-                ]
+                        } : null
+                ].filter(Boolean),
             }, 
             select: {
+                id: true,
                 title: true,
                 explanation: true,
+                code: true,
                 tags: true,
             },
         });

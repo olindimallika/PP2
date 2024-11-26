@@ -31,9 +31,12 @@ export default async function handler(req, res) {
                 title,
                 explanation,
                 code,
-                tags,
+                tags: {
+                    deleteMany: {}, 
+                    create: tags.map(tag => ({ name: tag })) 
+                },
             },
-
+            include: { tags: true }
         });
 
         if (!template){

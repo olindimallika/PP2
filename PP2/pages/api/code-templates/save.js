@@ -44,7 +44,7 @@ export default async function handler(req, res) {
                     create: tags.map(tag => ({ name: tag }))
                 },
                 blogPosts: {
-                    connect: availableBlogPosts.map(id => ({ id })) // link to existing blog posts by ID
+                    connect: availableBlogPosts // link to existing blog posts by ID
                 }
             },
             include: { tags: true, blogPosts: true } // Include tags in the response for confirmation
