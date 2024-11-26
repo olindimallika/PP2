@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { useRouter } from 'next/router';
 
 const SearchBlogPosts: React.FC = () => {
     const [titleQuery, setTitleQuery] = useState<string>(''); // store title search query
@@ -10,6 +11,7 @@ const SearchBlogPosts: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1); // keep track of the current page
     const [totalPages, setTotalPages] = useState<number>(0); // total number of pages available
     const pageSize = 5; // limit results per page
+    const router = useRouter();
 
     // fetch data from the backend
     const fetchResults = async (page: number) => {
@@ -64,6 +66,16 @@ const SearchBlogPosts: React.FC = () => {
         }
     };
 
+    // Navigate to blog post details page
+    const handleBlogClick = (postId: number) => {
+        router.push(`/frontend/blog-posts/view-single-blog?id=${postId}`); // Navigate to the blog post view page
+    };
+
+    // Navigate to template details page
+    const handleTemplateClick = (templateId: number) => {
+        router.push(`/frontend/blog-posts/blog-link-template?id=${templateId}`); // Navigate to the template view page
+    };
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
             <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
@@ -113,7 +125,11 @@ const SearchBlogPosts: React.FC = () => {
                         <h2 className="text-xl font-semibold mb-4">Search Results</h2>
                         <ul className="space-y-4">
                             {results.map((post) => (
-                                <li key={post.id} className="p-4 border rounded-lg shadow-sm">
+                                <li
+                                    key={post.id}
+                                    className="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleBlogClick(post.id)} // Navigate to blog post
+                                >
                                     <h3 className="text-lg font-bold">{post.title}</h3>
                                     <p className="text-sm text-gray-600">{post.description}</p>
                                     <p className="text-sm mt-2">
@@ -125,12 +141,15 @@ const SearchBlogPosts: React.FC = () => {
                                         <ul className="list-disc ml-4">
                                             {post.templates.map((template: any) => (
                                                 <li key={template.id}>
-                                                    <a
-                                                        href={template.link}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent triggering blog post click
+                                                            handleTemplateClick(template.id);
+                                                        }}
                                                         className="text-blue-500 underline"
                                                     >
                                                         {template.title}
-                                                    </a>
+                                                    </button>
                                                 </li>
                                             ))}
                                         </ul>

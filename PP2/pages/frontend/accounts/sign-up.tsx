@@ -97,7 +97,7 @@ const SignUpPage: React.FC = () => {
 
     const redirectToLogIn = () => {
         const callbackUrl = router.query.callback as string;
-        router.push(`/log-in?email=${formData.email}&callback=${callbackUrl || '/'}`);
+        router.push(`/frontend/accounts/log-in?email=${formData.email}&callback=${callbackUrl || '/'}`);
     };
 
     return (

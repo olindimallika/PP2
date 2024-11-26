@@ -48,7 +48,7 @@ const Header: React.FC = () => {
           </li>
           <li>
             <Link
-              href="/create-template"
+              href="/frontend/code-templates/create-template"
               style={{
                 color: 'black',
                 textDecoration: 'none',
@@ -63,7 +63,7 @@ const Header: React.FC = () => {
           </li>
           <li>
             <Link
-              href="/input"
+              href="/frontend/code-writing-and-execution/input"
               style={{
                 color: 'black',
                 textDecoration: 'none',
@@ -131,17 +131,17 @@ const Header: React.FC = () => {
                   }}
                 >
                   <li style={{ marginBottom: '10px' }}>
-                    <Link href="/profile" style={{ textDecoration: 'none', color: 'black' }}>
+                    <Link href="/frontend/accounts/profile" style={{ textDecoration: 'none', color: 'black' }}>
                       Profile
                     </Link>
                   </li>
                   <li style={{ marginBottom: '10px' }}>
-                    <Link href="/manage-posts" style={{ textDecoration: 'none', color: 'black' }}>
+                    <Link href="/frontend/blog-posts/manage-posts" style={{ textDecoration: 'none', color: 'black' }}>
                       Manage Posts
                     </Link>
                   </li>
                   <li style={{ marginBottom: '10px' }}>
-                    <Link href="/manage-templates" style={{ textDecoration: 'none', color: 'black' }}>
+                    <Link href="/frontend/code-templates/manage-templates" style={{ textDecoration: 'none', color: 'black' }}>
                       Manage Templates
                     </Link>
                   </li>
@@ -160,7 +160,7 @@ const Header: React.FC = () => {
           ) : (
             <li>
               <Link
-                href="/log-in"
+                href="/frontend/accounts/log-in"
                 style={{
                   color: 'white',
                   textDecoration: 'none',

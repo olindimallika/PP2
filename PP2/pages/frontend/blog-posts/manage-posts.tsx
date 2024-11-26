@@ -91,8 +91,14 @@ const ManagePosts: React.FC = () => {
           <ul className="space-y-4">
             {posts.map((post) => (
               <li key={post.id} className="p-4 border rounded-lg shadow-sm">
-                <h3 className="text-lg font-bold">{post.title}</h3>
-                <p className="text-sm text-gray-600">{post.description}</p>
+                <h3 className="text-lg font-bold">Title: {post.title}</h3>
+                <p className="text-sm text-gray-600">Description: {post.description}</p>
+                <p className="text-sm text-gray-600">
+                  <strong>Tags:</strong> {post.tags.map((tag: any) => tag.name).join(', ') || 'No tags'}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Template IDs:</strong> {post.templates.map((template: any) => template.id).join(', ') || 'No templates'}
+                </p>
                 <div className="mt-4 flex space-x-4">
                   <button
                     onClick={() => handleEdit(post.id)}
