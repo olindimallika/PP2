@@ -86,9 +86,7 @@ const Header: React.FC = () => {
 
 
 
-          <li>
-            <Link href="/frontend/code-templates/create-template">Create Template</Link>
-          </li>
+         
           <li>
             <Link href="/frontend/code-writing-and-execution/input">Code Execution</Link>
           </li>
