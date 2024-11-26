@@ -18,10 +18,89 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  line-height: inherit;
 }
 
+/* Box Sizing for All Elements */
+*, ::before, ::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: #e5e7eb;
+}
+
+/* Dropdown Menu Fixes */
+header, nav {
+  overflow: visible !important; /* Prevents clipping of dropdown menus */
+  position: relative; /* Ensures dropdown positioning works correctly */
+}
+
+/* Navigation Links Styling */
+nav a {
+  color: black; /* Black font for all navigation links */
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+nav a:hover {
+  color: #2980b9; /* Optional: Hover color (blue) */
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu {
+  position: absolute; /* Allows precise positioning relative to parent */
+  z-index: 1000; /* Ensures dropdown appears above other elements */
+  top: 100%; /* Positions dropdown below the parent */
+  right: 0; /* Aligns dropdown to the right */
+  background-color: white;
+  padding: 10px;
+  list-style: none;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: none; /* Hidden by default */
+}
+
+/* Dropdown Links Styling */
+.dropdown-menu a {
+  color: black; /* Black font for dropdown links */
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 5px 10px;
+  display: block;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f0f0f0; /* Optional: Light gray background on hover */
+}
+
+/* Show the dropdown on hover */
+li:hover .dropdown-menu {
+  display: block;
+}
+
+/* Utility for Balanced Text */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+/* Tailwind Utilities Layer */
+@layer utilities {
+  .hidden {
+    display: none;
+  }
+  .block {
+    display: block;
+  }
+  .absolute {
+    position: absolute;
+  }
+  .relative {
+    position: relative;
   }
 }

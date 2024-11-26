@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useAuth } from './auth-context'; // Update the path to your AuthContext
 
 const Header: React.FC = () => {
-  const { isLoggedIn, logout } = useAuth(); // Use global authentication state
-  const [showDropdown, setShowDropdown] = useState(false);
+  const { isLoggedIn, logout } = useAuth();
 
   return (
     <header
@@ -17,10 +16,8 @@ const Header: React.FC = () => {
         color: '#fff',
       }}
     >
-      {/* Logo or Title */}
       <h1 style={{ fontSize: '1.5rem', margin: 0 }}>Scriptorium</h1>
 
-      {/* Navigation Links */}
       <nav>
         <ul
           style={{
@@ -40,67 +37,66 @@ const Header: React.FC = () => {
                 fontSize: '1rem',
                 padding: '5px 10px',
                 borderRadius: '5px',
-                transition: 'background-color 0.3s',
               }}
             >
               Home
             </Link>
           </li>
-          <li>
-            <Link
-              href="/frontend/code-templates/create-template"
+          <li style={{ position: 'relative' }}>
+            <div
               style={{
                 color: 'black',
-                textDecoration: 'none',
                 fontSize: '1rem',
                 padding: '5px 10px',
-                borderRadius: '5px',
-                transition: 'background-color 0.3s',
-              }}
-            >
-              Create Template
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/frontend/code-writing-and-execution/input"
-              style={{
-                color: 'black',
-                textDecoration: 'none',
-                fontSize: '1rem',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                transition: 'background-color 0.3s',
-              }}
-            >
-              Code Execution
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/about"
-              style={{
-                color: 'black',
-                textDecoration: 'none',
-                fontSize: '1rem',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                transition: 'background-color 0.3s',
-              }}
-            >
-              About
-            </Link>
-          </li>
-
-          {/* Conditional Rendering Based on Login Status */}
-          {isLoggedIn ? (
-            <li
-              style={{
-                position: 'relative',
                 cursor: 'pointer',
               }}
-              onClick={() => setShowDropdown(!showDropdown)}
             >
+              Blog Posts
+            </div>
+            <ul className="dropdown-menu">
+              <li style={{ marginBottom: '10px' }}>
+                <Link href="/frontend/blog-posts/search-blog">Search Blog Posts</Link>
+              </li>
+              <li>
+                <Link href="/frontend/blog-posts/create-blog">Create Blog Post</Link>
+              </li>
+            </ul>
+          </li>
+
+          <li style={{ position: 'relative' }}>
+            <div
+              style={{
+                color: 'black',
+                fontSize: '1rem',
+                padding: '5px 10px',
+                cursor: 'pointer',
+              }}
+            >
+              Templates
+            </div>
+            <ul className="dropdown-menu">
+              <li style={{ marginBottom: '10px' }}>
+                <Link href="/frontend/code-templates/search-templates">Search All Templates</Link>
+              </li>
+              <li>
+                <Link href="/frontend/code-templates/create-template">Create Templates</Link>
+              </li>
+            </ul>
+          </li>
+
+
+
+          <li>
+            <Link href="/frontend/code-templates/create-template">Create Template</Link>
+          </li>
+          <li>
+            <Link href="/frontend/code-writing-and-execution/input">Code Execution</Link>
+          </li>
+          <li>
+            <Link href="/about">About</Link>
+          </li>
+          {isLoggedIn ? (
+            <li style={{ position: 'relative' }}>
               <div
                 style={{
                   width: '40px',
@@ -111,51 +107,32 @@ const Header: React.FC = () => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   color: 'white',
-                  fontSize: '1rem',
+                  cursor: 'pointer',
                 }}
               >
                 U
               </div>
-              {showDropdown && (
-                <ul
-                  style={{
-                    position: 'absolute',
-                    top: '50px',
-                    right: 0,
-                    backgroundColor: 'white',
-                    color: 'black',
-                    listStyle: 'none',
-                    padding: '10px',
-                    borderRadius: '5px',
-                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
-                  }}
-                >
-                  <li style={{ marginBottom: '10px' }}>
-                    <Link href="/frontend/accounts/profile" style={{ textDecoration: 'none', color: 'black' }}>
-                      Profile
-                    </Link>
-                  </li>
-                  <li style={{ marginBottom: '10px' }}>
-                    <Link href="/frontend/blog-posts/manage-posts" style={{ textDecoration: 'none', color: 'black' }}>
-                      Manage Posts
-                    </Link>
-                  </li>
-                  <li style={{ marginBottom: '10px' }}>
-                    <Link href="/frontend/code-templates/manage-templates" style={{ textDecoration: 'none', color: 'black' }}>
-                      Manage Templates
-                    </Link>
-                  </li>
-                  <li
-                    style={{
-                      cursor: 'pointer',
-                      color: 'red',
-                    }}
-                    onClick={logout} // Call the logout function
-                  >
-                    Logout
-                  </li>
-                </ul>
-              )}
+              <ul className="dropdown-menu">
+                <li>
+                  <Link href="/frontend/accounts/profile">Profile</Link>
+                </li>
+                <li>
+                  <Link href="/frontend/blog-posts/manage-posts">Manage Posts</Link>
+                </li>
+                <li>
+                  <Link href="/frontend/code-templates/manage-templates">
+                    Manage Templates
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/frontend/code-templates/view-templates">
+                    View or Search Your Templates
+                  </Link>
+                </li>
+                <li style={{ color: 'red', cursor: 'pointer' }} onClick={logout}>
+                  Logout
+                </li>
+              </ul>
             </li>
           ) : (
             <li>
@@ -164,23 +141,10 @@ const Header: React.FC = () => {
                 style={{
                   color: 'white',
                   textDecoration: 'none',
-                  fontSize: '1rem',
                   padding: '5px 20px',
                   backgroundColor: 'black',
                   borderRadius: '5px',
-                  border: 'none',
                   display: 'inline-block',
-                  cursor: 'pointer',
-                  verticalAlign: 'middle',
-                  lineHeight: '1.5',
-                  marginTop: '-7px',
-                  transition: 'background-color 0.3s',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.backgroundColor = '#2980b9'; // Darker hover color
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.backgroundColor = 'black'; // Original color on mouse leave
                 }}
               >
                 Log in
