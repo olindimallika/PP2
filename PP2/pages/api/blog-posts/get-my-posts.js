@@ -1,3 +1,4 @@
+//for managing a user's blog posts
 import prisma from '../../../utils/db';
 import { verifyToken } from '../../../utils/auth';
 

@@ -1,10 +1,17 @@
-import React from 'react';
-import Header from './header'; // Import the Header component
+import React, { useState } from 'react';
+import SearchBlogPosts from './frontend/blog-posts/search-blog'; 
+import SearchTemplates from './frontend/code-templates/search-templates';
+import SortedBlog from './frontend/blog-posts/sorted';
 
 const Home: React.FC = () => {
+  const [showViewAllBlogs, setShowViewAllBlogs] = useState(true); // State to control visibility of ViewAllBlogs
+
+  const handleSearchTrigger = () => {
+    setShowViewAllBlogs(false); // Hide ViewAllBlogs when search is triggered
+  };
+
   return (
     <div>
-
       {/* Page Content */}
       <main
         style={{
@@ -23,12 +30,42 @@ const Home: React.FC = () => {
           Welcome to Scriptorium
         </h1>
         <p style={{ fontSize: '1.2rem', color: '#7f8c8d' }}>
-          Dive into the world of coding! Use our tools to execute and test your
-          scripts.
+          Dive into the world of coding! Use our tools to execute and test your scripts.
         </p>
+
+        {/* Flex container for side-by-side layout */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            width: '100%',
+            marginTop: '40px',
+            gap: '20px',
+          }}
+        >
+          {/* Search Blog Posts */}
+          <div style={{ flex: 1, maxWidth: '48%' }}>
+            <SearchBlogPosts  /> {/* Pass the handler */}
+          </div>
+
+          {/* Search Templates */}
+          <div style={{ flex: 1, maxWidth: '48%' }}>
+            <SearchTemplates />
+          </div>
+        </div>
+
+        {/* Sorted Blog Posts */}
+        <div style={{ flex: 1, maxWidth: '48%', marginTop: '40px' }}>
+          <SortedBlog />
+        </div>
+
+        
       </main>
     </div>
   );
 };
 
 export default Home;
+

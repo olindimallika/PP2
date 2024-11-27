@@ -14,7 +14,7 @@ echo "Creating .env file with environment variables..."
 
 cat <<EOL > .env
 JWT_SECRET="werhui234u8549hr98284578925hr982357ryu9we8h345y92h3u5"
-JWT_ACCESS_EXPIRES_IN="15m"
+JWT_ACCESS_EXPIRES_IN="1h"
 JWT_REFRESH_EXPIRES_IN="7d"
 BCRYPT_SALT_ROUNDS=10
 DATABASE_URL="file:./dev.db"

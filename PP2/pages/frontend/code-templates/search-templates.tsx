@@ -5,16 +5,19 @@ const SearchTemplates: React.FC = () => {
     const [titleQuery, setTitleQuery] = useState("");
     const [explanationQuery, setExplanationQuery] = useState("");
     const [tagQuery, setTagQuery] = useState("");
-
-    const templates = []; // array of all templates created
-    const [templateStates, setTemplateStates] = useState(
-        templates.map((temp) => ({ ...temp, copied: false }))
-    );
-
+    const [templateStates, setTemplateStates] = useState([]);
     const [error, setError] = useState("");
     const [searchTriggered, setSearchTriggered] = useState(false); // Track if search has been triggered
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async () => {
+    const [currentPage, setCurrentPage] = useState(1); // Track current page
+    const [totalPages, setTotalPages] = useState(0); // Track total pages
+    const pageSize = 3; // Number of templates per page
+
+    // Fetch templates from the backend
+    const handleSubmit = async (page = 1) => {
+        setLoading(true);
+        setError("");
         try {
             const response = await fetch("/api/code-templates/search", {
                 method: "POST",
@@ -25,6 +28,8 @@ const SearchTemplates: React.FC = () => {
                     titleQuery,
                     explanationQuery,
                     tagQuery,
+                    page,
+                    pageSize,
                 }),
             });
 
@@ -34,21 +39,37 @@ const SearchTemplates: React.FC = () => {
             }
 
             const data = await response.json();
-
             setTemplateStates(data.codeTemplates);
+            setCurrentPage(data.currentPage);
+            setTotalPages(data.totalPages);
             setError("");
-        } catch (error) {
-            setError(error.message || "An error occurred.");
+        } catch (err: any) {
+            setError(err.message || "An error occurred.");
+        } finally {
+            setLoading(false);
         }
     };
 
     const getSearchedTemplates = (e: React.FormEvent) => {
         e.preventDefault();
         setSearchTriggered(true); // Set searchTriggered to true when the form is submitted
-        handleSubmit();
+        handleSubmit(1); // Always start from the first page
     };
 
-    // for copying code to user's clipboard
+    // Handle pagination controls
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            handleSubmit(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            handleSubmit(currentPage + 1);
+        }
+    };
+
+    // For copying code to clipboard
     const handleCopy = (id: number, code: string) => {
         navigator.clipboard.writeText(code).then(() => {
             setTemplateStates((prevStates) =>
@@ -57,7 +78,6 @@ const SearchTemplates: React.FC = () => {
                 )
             );
 
-            // Reset the "copied" state after a short delay
             setTimeout(() => {
                 setTemplateStates((prevStates) =>
                     prevStates.map((temp) =>
@@ -69,8 +89,7 @@ const SearchTemplates: React.FC = () => {
     };
 
     const handleModify = (id: number) => {
-        localStorage.setItem("templateId", JSON.stringify(id));
-        window.location.href = `/frontend/code-templates/modify-template`;
+        window.location.href = `/frontend/code-templates/modify-template?id=${id}`;
     };
 
     return (
@@ -87,7 +106,6 @@ const SearchTemplates: React.FC = () => {
                         <h1 className="text-2xl font-bold text-center mb-6 text-gray-500">Search All Templates</h1>
 
                         <form onSubmit={getSearchedTemplates} className="space-y-6">
-                            {/* title search input */}
                             <input
                                 id="title-bar"
                                 type="text"
@@ -97,7 +115,6 @@ const SearchTemplates: React.FC = () => {
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTitleQuery(e.target.value)}
                                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             />
-                            {/* explanation search input */}
                             <input
                                 id="exp-bar"
                                 type="text"
@@ -107,7 +124,6 @@ const SearchTemplates: React.FC = () => {
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setExplanationQuery(e.target.value)}
                                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             />
-                            {/* tag search input */}
                             <input
                                 id="tag-bar"
                                 type="text"
@@ -120,87 +136,79 @@ const SearchTemplates: React.FC = () => {
                             <button
                                 id="search-button"
                                 type="submit"
-                                className="block w-full p-4 ps-10 rounded-lg bg-blue-700 hover:bg-blue-800"
+                                disabled={loading}
+                                className={`block w-full p-4 ps-10 rounded-lg ${
+                                    loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"
+                                }`}
                             >
-                                {"Search"}
+                                {loading ? "Searching..." : "Search"}
                             </button>
                         </form>
 
                         {/* Show search results if any */}
                         {templateStates.length > 0 && (
                             <div className="w-full">
-                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100">Search Results</h2>
+                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100">
+                                    Search Results
+                                </h2>
                                 <ul className="space-y-4">
                                     {templateStates.map((temp) => (
                                         <li key={temp.id} className="p-4 border rounded-lg shadow-sm">
                                             <h3 className="text-black text-lg font-bold">{temp.title}</h3>
                                             <p className="text-sm text-gray-600">Template ID: {temp.id}</p>
                                             <p className="text-sm text-gray-600">{temp.explanation}</p>
-                                            <p className="text-sm text-gray-600">
-                                                {/* Code Block Container */}
-                                                <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
-                                                    <div className="overflow-x-scroll max-h-full">
-                                                        <pre>
-                                                            <code id="code-block" className="text-sm text-violet-300 whitespace-pre">
-                                                                {temp.code}
-                                                            </code>
-                                                        </pre>
-                                                    </div>
-                                                    {/* Copy Button */}
-                                                    <div className="absolute top-2 end-2 bg-gray-50 dark:bg-gray-700">
-                                                        <button
-                                                            onClick={() => handleCopy(temp.id, temp.code)}
-                                                            className="text-gray-900 dark:text-gray-400 m-0.5 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border"
-                                                        >
-                                                            {temp.copied ? (
-                                                                <span className="inline-flex items-center">
-                                                                    <svg
-                                                                        className="w-3 h-3 text-blue-700 dark:text-blue-500 me-1.5"
-                                                                        fill="none"
-                                                                        viewBox="0 0 16 12"
-                                                                    >
-                                                                        <path
-                                                                            stroke="currentColor"
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth="2"
-                                                                            d="M1 5.917 5.724 10.5 15 1.5"
-                                                                        />
-                                                                    </svg>
-                                                                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-500">
-                                                                        Copied
-                                                                    </span>
-                                                                </span>
-                                                            ) : (
-                                                                <span className="inline-flex items-center">
-                                                                    <svg className="w-3 h-3 me-1.5" fill="currentColor" viewBox="0 0 18 20">
-                                                                        <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
-                                                                    </svg>
-                                                                    <span className="text-xs font-semibold">Copy code</span>
-                                                                </span>
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </p>
+                                            <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
+                                                <pre>
+                                                    <code className="text-sm text-violet-300 whitespace-pre">{temp.code}</code>
+                                                </pre>
+                                                <button
+                                                    onClick={() => handleCopy(temp.id, temp.code)}
+                                                    className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-1 rounded"
+                                                >
+                                                    {temp.copied ? "Copied" : "Copy"}
+                                                </button>
+                                            </div>
                                             <p className="text-sm mt-2 text-black">
                                                 <strong>Tags:</strong> {temp.tags.map((tag: any) => tag.name).join(", ")}
                                             </p>
-                                            <div className="mt-4 flex space-x-4">
-                                                <button
-                                                    onClick={() => handleModify(temp.id)}
-                                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                                                >
-                                                    Modify
-                                                </button>
-                                            </div>
+                                            <button
+                                                onClick={() => handleModify(temp.id)}
+                                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                            >
+                                                Modify
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
+
+                                {/* Pagination */}
+                                <div className="flex justify-center mt-6 space-x-4">
+                                    <button
+                                        onClick={handlePreviousPage}
+                                        disabled={currentPage === 1}
+                                        className={`px-4 py-2 bg-gray-300 rounded-lg ${
+                                            currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"
+                                        }`}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={handleNextPage}
+                                        disabled={currentPage === totalPages}
+                                        className={`px-4 py-2 bg-gray-300 rounded-lg ${
+                                            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"
+                                        }`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                                <p className="text-sm text-gray-500 mt-2 text-center">
+                                    Page {currentPage} of {totalPages}
+                                </p>
                             </div>
                         )}
 
-                        {/* no results message */}
+                        {/* No results message */}
                         {searchTriggered && templateStates.length === 0 && !error && (
                             <p className="text-gray-600 text-center mt-6">No results found for your search.</p>
                         )}
