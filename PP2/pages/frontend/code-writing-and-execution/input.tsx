@@ -6,7 +6,11 @@ import 'prismjs/components/prism-python.min.js';
 import 'prismjs/components/prism-c.min.js';
 import 'prismjs/components/prism-cpp.min.js';
 import 'prismjs/components/prism-java.min.js';
-
+import 'prismjs/components/prism-ruby.min.js';
+import 'prismjs/components/prism-go.min.js';
+import 'prismjs/components/prism-php.min.js';
+import 'prismjs/components/prism-haskell.min.js';
+import 'prismjs/components/prism-rust.min.js';
 
 const Input: React.FC = () => {
   const [code, setCode] = useState<string>('');
@@ -28,10 +32,11 @@ const Input: React.FC = () => {
       cpp: 'cpp',
       java: 'java',
       ruby: 'ruby',
-      swift: 'swift',
       go: 'go',
+      php: 'php',
+      rust: 'rust',
+      swift: 'swift',
       haskell: 'haskell',
-      php: 'php'
     };
     const lang = languageMap[language] || 'javascript';
     try {
@@ -113,7 +118,7 @@ const Input: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="code-execution-container">
       <div className="form-container">
         <h1>Code Execution</h1>
 
@@ -122,19 +127,18 @@ const Input: React.FC = () => {
             <div className="code-editor-container">
               <label htmlFor="language">Language:</label>
               <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
-    <option value="javascript">JavaScript</option>
-    <option value="python">Python</option>
-    <option value="c">C</option>
-    <option value="cpp">C++</option>
-    <option value="java">Java</option>
-    <option value="ruby">Ruby</option>
-    <option value="go">Go</option>
-    <option value="php">PHP</option>
-    <option value="swift">Swift</option>
-    <option value="haskell">Haskell</option>
-</select>
-
-          
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="c">C</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+                <option value="ruby">Ruby</option>
+                <option value="go">Go</option>
+                <option value="php">PHP</option>
+                <option value="rust">Rust</option>
+                <option value="swift">Swift</option>
+                <option value="haskell">Haskell</option>
+              </select>
 
               <label htmlFor="code">Code:</label>
               <div className="editor-wrapper">
