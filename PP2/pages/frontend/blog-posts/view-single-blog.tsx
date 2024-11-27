@@ -3,28 +3,27 @@ import { useRouter } from 'next/router';
 
 const ViewBlogPost: React.FC = () => {
   const router = useRouter();
-  const { id } = router.query; // Extract blog post ID from query params
+  const { id } = router.query;
 
-  const [post, setPost] = useState<any>(null); // State to store the blog post details
-  const [comments, setComments] = useState<any[]>([]); // State to store comments
-  const [newComment, setNewComment] = useState<string>(''); // State for new comment input
-  const [reply, setReply] = useState<{ [key: number]: string }>({}); // State for replies keyed by comment ID
-  const [replyingTo, setReplyingTo] = useState<number | null>(null); // Track which comment is being replied to
-  const [loading, setLoading] = useState<boolean>(true); // Loading state
-  const [error, setError] = useState<string>(''); // Error messages
+  const [post, setPost] = useState<any>(null);
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState<string>('');
+  const [reply, setReply] = useState<{ [key: number]: string }>({});
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   // Fetch blog post and comments
   const fetchBlogPostAndComments = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/blog-posts/view-single-blog?id=${id}`); // Backend API endpoint
+      const response = await fetch(`/api/blog-posts/view-single-blog?id=${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch the blog post.');
       }
-
       const data = await response.json();
-      setPost(data.post); // Set the blog post data
-      setComments(data.post.comments || []); // Ensure comments are loaded from the API
+      setPost(data.post);
+      setComments(data.post.comments || []);
     } catch (err: any) {
       setError(err.message || 'An error occurred while fetching the blog post.');
     } finally {
@@ -32,9 +31,88 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
+  // Navigate to template details page
+  const handleTemplateClick = (templateId: number) => {
+    router.push(`/frontend/blog-posts/blog-link-template?id=${templateId}`);
+  };
+
+  // Add a new comment
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setError('You must be logged in to post a comment.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog-posts/create-comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: newComment,
+          blogPostId: Number(id),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add comment.');
+      }
+
+      const newCommentData = await response.json();
+      setComments((prevComments) => [newCommentData.comment, ...prevComments]);
+      setNewComment('');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while adding the comment.');
+    }
+  };
+
+  // Add a reply to a comment
+  const handleAddReply = async (parentId: number) => {
+    if (!reply[parentId]?.trim()) return;
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setError('You must be logged in to post a reply.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog-posts/create-comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: reply[parentId],
+          blogPostId: Number(id),
+          parentId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add reply.');
+      }
+
+      const newReplyData = await response.json();
+      setComments((prevComments) => [newReplyData.comment, ...prevComments]);
+      setReplyingTo(null);
+      setReply((prev) => ({ ...prev, [parentId]: '' }));
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while adding the reply.');
+    }
+  };
+
   // Handle ratings (upvote/downvote)
   const handleRating = async (isUpvote: boolean, blogPostId?: number, commentId?: number) => {
-    const token = localStorage.getItem('accessToken'); // Retrieve user's token
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       setError('You must be logged in to rate.');
       return;
@@ -61,14 +139,12 @@ const ViewBlogPost: React.FC = () => {
 
       const ratingData = await response.json();
       if (blogPostId) {
-        // Update the blog post rating counts
         setPost((prevPost: any) => ({
           ...prevPost,
           upvoteCount: ratingData.upvotes,
           downvoteCount: ratingData.downvotes,
         }));
       } else if (commentId) {
-        // Update the specific comment rating counts
         setComments((prevComments) =>
           prevComments.map((comment) =>
             comment.id === commentId
@@ -92,12 +168,11 @@ const ViewBlogPost: React.FC = () => {
     }
   }, [id]);
 
-  // Recursive function to render nested comments
   const renderComments = (commentList: any[], parentId: number | null = null) => {
     return commentList
       .filter((comment) => comment.parentId === parentId)
       .map((comment) => (
-        <div key={comment.id} className="border rounded-lg p-4 ml-4">
+        <div key={comment.id} className="p-4 ml-6 border-l-2 border-gray-200">
           <div className="flex items-start space-x-4">
             <div className="flex-shrink-0">
               <img
@@ -106,12 +181,12 @@ const ViewBlogPost: React.FC = () => {
                 className="w-10 h-10 rounded-full"
               />
             </div>
-            <div>
-              <p className="text-gray-800">{comment.content}</p>
-              <p className="text-sm text-gray-500 mt-2">
+            <div className="w-full">
+              <p className="font-medium text-gray-800">{comment.content}</p>
+              <p className="text-sm text-gray-500">
                 Posted by {comment.user?.firstName} {comment.user?.lastName}
               </p>
-              <div className="flex items-center mt-2 space-x-2">
+              <div className="flex items-center space-x-2 mt-2">
                 <button
                   onClick={() => handleRating(true, undefined, comment.id)}
                   className="text-blue-500 hover:text-blue-600"
@@ -127,12 +202,10 @@ const ViewBlogPost: React.FC = () => {
               </div>
               <button
                 onClick={() => setReplyingTo(comment.id)}
-                className="text-blue-500 text-sm underline mt-2"
+                className="mt-2 text-sm text-blue-500 underline"
               >
                 Reply
               </button>
-
-              {/* Reply Input */}
               {replyingTo === comment.id && (
                 <div className="mt-4">
                   <textarea
@@ -144,27 +217,17 @@ const ViewBlogPost: React.FC = () => {
                     className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                     rows={2}
                   />
-                  <div className="flex justify-end space-x-4 mt-2">
+                  <div className="flex justify-end mt-2">
                     <button
-                      onClick={() => setReplyingTo(null)}
-                      className="px-4 py-2 text-gray-500 hover:text-black"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => handleRating(true, undefined, comment.id)}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                      onClick={() => handleAddReply(comment.id)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
                     >
                       Respond
                     </button>
                   </div>
                 </div>
               )}
-
-              {/* Render Replies */}
-              <div className="ml-6 mt-4">
-                {renderComments(commentList, comment.id)}
-              </div>
+              <div className="mt-4">{renderComments(commentList, comment.id)}</div>
             </div>
           </div>
         </div>
@@ -179,12 +242,13 @@ const ViewBlogPost: React.FC = () => {
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl">
         {post ? (
           <>
-            <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-            <p className="text-gray-600 mb-6">{post.description}</p>
-            <div className="text-gray-800 mb-6">
-              <p>{post.content}</p>
+            <h1 className="text-3xl font-bold">{post.title}</h1>
+            <p className="text-gray-600 mt-2">{post.description}</p>
+            <div className="text-gray-800 mt-4">{post.content}</div>
+            <div className="mt-4 text-sm text-gray-500">
+              Posted by {post.user?.firstName} {post.user?.lastName}
             </div>
-            <div className="flex items-center mt-4 space-x-4">
+            <div className="flex mt-4 space-x-4">
               <button
                 onClick={() => handleRating(true, Number(id))}
                 className="text-blue-500 hover:text-blue-600"
@@ -198,11 +262,40 @@ const ViewBlogPost: React.FC = () => {
                 ▼ {post.downvoteCount}
               </button>
             </div>
-            <h2 className="text-2xl font-bold mt-6 mb-4">Comments ({comments.length})</h2>
-            <div className="space-y-6">{renderComments(comments)}</div>
+            {post.templates?.length > 0 && (
+              <div className="mt-6">
+                <h2 className="text-xl font-semibold">Templates</h2>
+                <ul className="list-disc pl-5">
+                  {post.templates.map((template: any) => (
+                    <li key={template.id}>
+                      <button
+                        onClick={() => handleTemplateClick(template.id)}
+                        className="text-blue-500 underline"
+                      >
+                        {template.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <h2 className="text-2xl font-bold mt-6">Comments</h2>
+            <textarea
+              placeholder="Write a comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="w-full p-3 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <button
+              onClick={handleAddComment}
+              className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Add Comment
+            </button>
+            <div className="mt-6 space-y-6">{renderComments(comments)}</div>
           </>
         ) : (
-          <p className="text-gray-600">Blog post not found.</p>
+          <p className="text-gray-500">Blog post not found.</p>
         )}
       </div>
     </div>

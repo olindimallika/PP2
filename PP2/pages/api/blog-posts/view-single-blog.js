@@ -16,6 +16,7 @@ export default async function handler(req, res) {
             where: { id: Number(id) },
             include: {
                 user: true,
+                templates: true,
                 comments: {
                     include: {
                         user: { select: { firstName: true, lastName: true, avatar: true } }, // Include avatar
