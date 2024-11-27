@@ -12,7 +12,7 @@ const ViewBlogPost: React.FC = () => {
   const [replyingTo, setReplyingTo] = useState<number | null>(null); // Track which comment is being replied to
   const [loading, setLoading] = useState<boolean>(true); // Loading state
   const [error, setError] = useState<string>(''); // Error messages
-
+  const [report, setReport] = useState<string>(''); // Report message
   // Fetch blog post and comments
   const fetchBlogPostAndComments = async () => {
     setLoading(true);
@@ -86,6 +86,46 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
+  const handleReports = async (commentId?: number, blogPostId?: number) => {
+    const token = localStorage.getItem('accessToken'); // Retrieve the user's token
+    if (!token) {
+      setError('You must be logged in to report.');
+      return;
+    }
+  
+    const reason = prompt("Please provide a reason for reporting this content:"); // Ask user for reason
+    if (!reason || reason.trim() === '') {
+      setError('Reason for reporting is required.');
+      return;
+    }
+  
+    try {
+      const response = await fetch('/api/icr/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          commentId,
+          blogPostId,
+          reason,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit the report.');
+      }
+  
+      const data = await response.json();
+      alert(data.message || 'Report submitted successfully.');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while submitting the report.');
+    }
+  };
+  
+
   useEffect(() => {
     if (id) {
       fetchBlogPostAndComments();
@@ -130,6 +170,12 @@ const ViewBlogPost: React.FC = () => {
                 className="text-blue-500 text-sm underline mt-2"
               >
                 Reply
+              </button>
+              <button 
+                onClick={() => handleReports(comment.id, undefined)} // Pass commendId
+                className="text-red-500 text-sm underline mt-2"
+              >
+                Report Comment
               </button>
 
               {/* Reply Input */}
@@ -196,6 +242,12 @@ const ViewBlogPost: React.FC = () => {
                 className="text-red-500 hover:text-red-600"
               >
                 ▼ {post.downvoteCount}
+              </button>
+              <button
+                onClick={() => handleReports(undefined, Number(id))} // Pass blogPostId
+                className="text-red-500 text-sm underline mt-2"
+              >
+              Report Post
               </button>
             </div>
             <h2 className="text-2xl font-bold mt-6 mb-4">Comments ({comments.length})</h2>
