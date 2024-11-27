@@ -2,26 +2,27 @@ import React, { useState, ChangeEvent } from "react";
 import Head from "next/head";
 
 const SearchTemplates: React.FC = () => {
-    const [titleQuery, setTitleQuery] = React.useState("");
-    const [explanationQuery, setExplanationQuery] = React.useState("");
-    const [tagQuery, setTagQuery] = React.useState("");
+    const [titleQuery, setTitleQuery] = useState("");
+    const [explanationQuery, setExplanationQuery] = useState("");
+    const [tagQuery, setTagQuery] = useState("");
 
     const templates = []; // array of all templates created
-    const [templateStates, setTemplateStates] = useState(  // array of templates with an extra parameter "copied" for if the user copies the template
+    const [templateStates, setTemplateStates] = useState(
         templates.map((temp) => ({ ...temp, copied: false }))
     );
 
-    const [error, setError] = React.useState("");
+    const [error, setError] = useState("");
+    const [searchTriggered, setSearchTriggered] = useState(false); // Track if search has been triggered
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch('/api/code-templates/search', {
-                method: 'POST',
+            const response = await fetch("/api/code-templates/search", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    titleQuery, 
+                    titleQuery,
                     explanationQuery,
                     tagQuery,
                 }),
@@ -29,21 +30,21 @@ const SearchTemplates: React.FC = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'An error occurred while getting the saved code templates.');
+                throw new Error(errorData.error || "An error occurred while getting the saved code templates.");
             }
 
             const data = await response.json();
-            
+
             setTemplateStates(data.codeTemplates);
-            setError('');
-      
+            setError("");
         } catch (error) {
-            setError(error.message || 'An error occurred.');
+            setError(error.message || "An error occurred.");
         }
     };
 
     const getSearchedTemplates = (e: React.FormEvent) => {
         e.preventDefault();
+        setSearchTriggered(true); // Set searchTriggered to true when the form is submitted
         handleSubmit();
     };
 
@@ -55,7 +56,7 @@ const SearchTemplates: React.FC = () => {
                     temp.id === id ? { ...temp, copied: true } : { ...temp, copied: false }
                 )
             );
-    
+
             // Reset the "copied" state after a short delay
             setTimeout(() => {
                 setTemplateStates((prevStates) =>
@@ -68,7 +69,7 @@ const SearchTemplates: React.FC = () => {
     };
 
     const handleModify = (id: number) => {
-        localStorage.setItem('templateId', JSON.stringify(id));
+        localStorage.setItem("templateId", JSON.stringify(id));
         window.location.href = `/frontend/code-templates/modify-template`;
     };
 
@@ -116,12 +117,13 @@ const SearchTemplates: React.FC = () => {
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTagQuery(e.target.value)}
                                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             />
-                            <button 
+                            <button
                                 id="search-button"
                                 type="submit"
-                                className="block w-full p-4 ps-10 rounded-lg bg-blue-700 hover:bg-blue-800">
+                                className="block w-full p-4 ps-10 rounded-lg bg-blue-700 hover:bg-blue-800"
+                            >
                                 {"Search"}
-                            </button> 
+                            </button>
                         </form>
 
                         {/* Show search results if any */}
@@ -129,74 +131,61 @@ const SearchTemplates: React.FC = () => {
                             <div className="w-full">
                                 <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100">Search Results</h2>
                                 <ul className="space-y-4">
-
                                     {templateStates.map((temp) => (
                                         <li key={temp.id} className="p-4 border rounded-lg shadow-sm">
                                             <h3 className="text-black text-lg font-bold">{temp.title}</h3>
                                             <p className="text-sm text-gray-600">Template ID: {temp.id}</p>
                                             <p className="text-sm text-gray-600">{temp.explanation}</p>
                                             <p className="text-sm text-gray-600">
-
                                                 {/* Code Block Container */}
                                                 <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
                                                     <div className="overflow-x-scroll max-h-full">
                                                         <pre>
-                                                            <code
-                                                            id="code-block"
-                                                            className="text-sm text-violet-300 whitespace-pre">
+                                                            <code id="code-block" className="text-sm text-violet-300 whitespace-pre">
                                                                 {temp.code}
                                                             </code>
                                                         </pre>
                                                     </div>
-
                                                     {/* Copy Button */}
                                                     <div className="absolute top-2 end-2 bg-gray-50 dark:bg-gray-700">
-                                                    <button
-                                                        onClick={() => handleCopy(temp.id, temp.code)}
-                                                        className="text-gray-900 dark:text-gray-400 m-0.5 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border">
-                                                        {temp.copied ? (
-                                                            /* when copy button is clicked */
-                                                            <span className="inline-flex items-center">
-                                                                <svg
-                                                                    className="w-3 h-3 text-blue-700 dark:text-blue-500 me-1.5"
-                                                                    fill="none"
-                                                                    viewBox="0 0 16 12">
-                                                                    <path
-                                                                        stroke="currentColor"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth="2"
-                                                                        d="M1 5.917 5.724 10.5 15 1.5"/>
-                                                                </svg>
-                                                                <span className="text-xs font-semibold text-blue-700 dark:text-blue-500">
-                                                                    Copied
+                                                        <button
+                                                            onClick={() => handleCopy(temp.id, temp.code)}
+                                                            className="text-gray-900 dark:text-gray-400 m-0.5 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border"
+                                                        >
+                                                            {temp.copied ? (
+                                                                <span className="inline-flex items-center">
+                                                                    <svg
+                                                                        className="w-3 h-3 text-blue-700 dark:text-blue-500 me-1.5"
+                                                                        fill="none"
+                                                                        viewBox="0 0 16 12"
+                                                                    >
+                                                                        <path
+                                                                            stroke="currentColor"
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            strokeWidth="2"
+                                                                            d="M1 5.917 5.724 10.5 15 1.5"
+                                                                        />
+                                                                    </svg>
+                                                                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-500">
+                                                                        Copied
+                                                                    </span>
                                                                 </span>
-                                                            </span>
-                                                        ) : (
-                                                            /* default state of copy button */
-                                                            <span className="inline-flex items-center">
-                                                                <svg
-                                                                    className="w-3 h-3 me-1.5"
-                                                                    fill="currentColor"
-                                                                    viewBox="0 0 18 20"
-                                                                >
-                                                                    <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
-                                                                </svg>
-                                                                <span 
-                                                                    className="text-xs font-semibold">
-                                                                        Copy code
+                                                            ) : (
+                                                                <span className="inline-flex items-center">
+                                                                    <svg className="w-3 h-3 me-1.5" fill="currentColor" viewBox="0 0 18 20">
+                                                                        <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
+                                                                    </svg>
+                                                                    <span className="text-xs font-semibold">Copy code</span>
                                                                 </span>
-                                                            </span>
-                                                        )}
-                                                    </button>
+                                                            )}
+                                                        </button>
                                                     </div>
-                                                </div>    
+                                                </div>
                                             </p>
                                             <p className="text-sm mt-2 text-black">
-                                                <strong>Tags:</strong>{' '}
-                                                {temp.tags.map((tag: any) => tag.name).join(', ')}
+                                                <strong>Tags:</strong> {temp.tags.map((tag: any) => tag.name).join(", ")}
                                             </p>
-
                                             <div className="mt-4 flex space-x-4">
                                                 <button
                                                     onClick={() => handleModify(temp.id)}
@@ -210,17 +199,16 @@ const SearchTemplates: React.FC = () => {
                                 </ul>
                             </div>
                         )}
-                        
+
                         {/* no results message */}
-                        {templateStates.length === 0 && !error && (titleQuery || explanationQuery || tagQuery) && (
+                        {searchTriggered && templateStates.length === 0 && !error && (
                             <p className="text-gray-600 text-center mt-6">No results found for your search.</p>
                         )}
-
                     </div>
                 </div>
             </main>
         </>
     );
-}
+};
 
 export default SearchTemplates;

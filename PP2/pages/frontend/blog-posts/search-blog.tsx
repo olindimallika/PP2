@@ -10,6 +10,7 @@ const SearchBlogPosts: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false); // show loading animation
     const [currentPage, setCurrentPage] = useState<number>(1); // keep track of the current page
     const [totalPages, setTotalPages] = useState<number>(0); // total number of pages available
+    const [searchTriggered, setSearchTriggered] = useState<boolean>(false); // Flag to track if search was triggered
     const pageSize = 5; // limit results per page
     const router = useRouter();
 
@@ -49,6 +50,7 @@ const SearchBlogPosts: React.FC = () => {
     // handle form submission
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault(); // stop the page from reloading
+        setSearchTriggered(true); // Set search triggered flag to true
         fetchResults(1); // always start with page 1 when searching
     };
 
@@ -184,7 +186,7 @@ const SearchBlogPosts: React.FC = () => {
                     </div>
                 )}
                 {/* no results message */}
-                {results.length === 0 && !loading && !error && (titleQuery || contentQuery || templateQuery) && (
+                {searchTriggered && results.length === 0 && !loading && !error && (
                     <p className="text-gray-600 text-center mt-6">No results found for your search.</p>
                 )}
             </div>
