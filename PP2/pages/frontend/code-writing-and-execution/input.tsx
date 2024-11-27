@@ -121,7 +121,6 @@ const Input: React.FC = () => {
     <div className="code-execution-container">
       <div className="form-container">
         <h1>Code Execution</h1>
-
         <form onSubmit={handleSubmit}>
           <div className="editor-container">
             <div className="code-editor-container">
