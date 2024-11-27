@@ -12,7 +12,15 @@ export default async function handler(req, res) {
                 },
                 // from gpt, asked how to generate associated blog posts of a given code template
                 include: {
-                    blogPosts: true,
+                    blogPosts: {
+                        select: {
+                            id: true,
+                            title: true,
+                            description: true,
+                            isHidden: true,
+                            tags: true,
+                        },
+                    },
                 },
             });
 
