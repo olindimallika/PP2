@@ -4,7 +4,6 @@
   margin: 0;
   padding: 0;
 }
-
 .code-execution-container .form-container {
   width: 90%;
   max-width: 1200px;
@@ -15,6 +14,8 @@
   border-radius: 8px;
   height: 100%;
 }
+
+
 
 .code-execution-container h1 {
   text-align: center;
