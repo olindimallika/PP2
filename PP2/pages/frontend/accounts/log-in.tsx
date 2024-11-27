@@ -65,8 +65,8 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black py-8">
+            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md text-black">
                 <h1 className="text-2xl font-bold text-center mb-6">Log In</h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <input

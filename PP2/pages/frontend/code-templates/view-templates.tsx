@@ -11,8 +11,8 @@ export default function SearchSavedTemplates() {
     const [searchError, setSearchError] = React.useState("");
     const [loading, setLoading] = useState<boolean>(false);
 
-    const [action, setAction] = React.useState("Options");
-    const options = ["Options", "View Existing Templates", "Search Saved Templates"];
+    const [action, setAction] = React.useState("Select an action");
+    const options = ["Select an action", "View Existing Templates", "Search Saved Templates"];
     const router = useRouter();
 
     const viewedTemplates = []; // array of all user's saved templates
@@ -32,7 +32,7 @@ export default function SearchSavedTemplates() {
         const id = localStorage.getItem('userId'); 
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            setViewError('Must be logged in or sign up to view a code template.');
+            setViewError('Unauthorized. Please log in or sign up.');
             setLoading(false);
             return;
         }
@@ -49,7 +49,7 @@ export default function SearchSavedTemplates() {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    throw new Error('Unauthorized. Please log in.');
+                    throw new Error('Unauthorized. Please log in or sign up.');
                 }
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'An error occurred while getting the saved code templates.');
@@ -71,7 +71,7 @@ export default function SearchSavedTemplates() {
         const id = localStorage.getItem('userId'); 
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            setSearchError('Must be logged in or sign up to search a code template.');
+            setSearchError('Unauthorized. Please log in or sign up.');
             return;
         }
 
@@ -91,7 +91,7 @@ export default function SearchSavedTemplates() {
         
             if (!response.ok) {
                 if (response.status === 401) {
-                    throw new Error('Unauthorized. Please log in.');
+                    throw new Error('Unauthorized. Please log in or sign up.');
                 }
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'An error occurred while getting the saved code templates.');
@@ -117,11 +117,11 @@ export default function SearchSavedTemplates() {
     };
 
     const redirectToLogIn = () => {
-        router.push(`/log-in?callback=/view-templates`);
+        router.push(`/frontend/accounts/log-in`);
     };
 
     const redirectToSignUp = () => {
-        router.push(`/sign-up?callback=/view-templates`);
+        router.push(`/frontend/accounts/sign-up`);
     };
 
     // clear output
@@ -207,13 +207,11 @@ export default function SearchSavedTemplates() {
             </Head>
             <main>
                 <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
-                    <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-y-8">
-                        <h1 className="text-2xl font-bold text-center mb-6 text-gray-500">View or Search Saved Templates</h1>
-
+                    <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-4">
                         {/* Dropdown for either saving or searching saved templates */}
                         <select 
                             id="manage" 
-                            className="h-10 md:h-16 text-white bg-blue-700 hover:bg-blue-800 rounded-lg" 
+                            className="h-10 md:h-16 text-white bg-blue-500 hover:bg-blue-600 rounded-lg w-4/5" 
                             value={action} 
                             onChange={handleChange}>
 
@@ -228,7 +226,7 @@ export default function SearchSavedTemplates() {
                         {viewError && (
                             <div className="text-red-500 text-center mt-4">
                                 <p>{viewError}</p>
-                                {(viewError === 'Must be logged in or sign up to view a code template.') && (
+                                {(viewError === 'Unauthorized. Please log in or sign up.') && (
                                     <div className="flex space-x-4 justify-center mt-2">
                                         <button
                                             onClick={redirectToLogIn}
@@ -251,11 +249,11 @@ export default function SearchSavedTemplates() {
                         {/* Show view results if any */}
                         {viewTemplates.length > 0 && (
                             <div className="w-full">
-                                <h2 className="text-gray-500 text-xl font-semibold mb-4 bg-violet-100">Your Saved Templates:</h2>
-                                <div className="mt-4 flex space-x-4">
+                                <h2 className="text-gray-500 text-xl font-semibold mb-4">Your Saved Templates:</h2>
+                                <div className="m-4 flex space-x-4">
                                     <button
                                         onClick={() => handleManage()}
-                                        className="w-full bg-blue-500 text-white rounded hover:bg-blue-600"
+                                        className="w-full bg-blue-500 text-white rounded hover:bg-blue-600 p-2"
                                     >
                                         Manage All Templates
                                     </button>
@@ -380,7 +378,7 @@ export default function SearchSavedTemplates() {
                             {searchError && (
                                 <div className="text-red-500 text-center mt-4">
                                     <p>{searchError}</p>
-                                    {(searchError === 'Must be logged in or sign up to view a code template.') && (
+                                    {(searchError === 'Unauthorized. Please log in or sign up.') && (
                                         <div className="flex space-x-4 justify-center mt-2">
                                             <button
                                                 onClick={redirectToLogIn}
@@ -404,7 +402,7 @@ export default function SearchSavedTemplates() {
                         {/* Show search results if any */}
                         {searchTemplates.length > 0 && (
                             <div className="w-full">
-                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100">Search Results</h2>
+                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center">Search Results</h2>
                                 <ul className="space-y-4">
                                     {searchTemplates.map((temp) => (
                                         <li key={temp.id} className="p-4 border rounded-lg shadow-sm">

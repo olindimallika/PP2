@@ -2,7 +2,12 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from './auth-context'; // Update the path to your AuthContext
 
-const Header: React.FC = () => {
+type HeaderProps = {
+    toggleDarkMode: () => void;
+    darkMode: boolean;
+};
+
+const Header: React.FC<HeaderProps> = ({ toggleDarkMode, darkMode }) => {
   const { isLoggedIn, logout } = useAuth();
 
   return (
@@ -28,6 +33,14 @@ const Header: React.FC = () => {
             gap: '15px',
           }}
         >
+          <li>
+            <button 
+                className="dark:bg-white dark:text-black bg-black text-white px-5 rounded-full font-semibold border-2 border-black hover:scale-105 transition-all duration-300"
+                onClick={toggleDarkMode}
+            >
+                Theme: {darkMode ? "Dark" : "Light"}
+            </button>
+          </li>  
           <li>
             <Link
               href="/"

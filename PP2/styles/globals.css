@@ -7,7 +7,7 @@
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
@@ -103,4 +103,8 @@ li:hover .dropdown-menu {
   .relative {
     position: relative;
   }
+}
+
+*{
+    @apply transition-colors duration-300;
 }

@@ -79,12 +79,16 @@ export default function Templates() {
     };
 
     const redirectToLogIn = () => {
-        router.push(`/log-in?callback=/create-template`);
+        router.push(`/frontend/accounts/log-in`);
     };
 
     const redirectToSignUp = () => {
-        router.push(`/sign-up?callback=/create-template`);
+        router.push(`/frontend/accounts/sign-up`);
     };
+
+    const redirectToView = () => {
+        router.push(`/frontend/code-templates/view-templates`);
+    }
 
     return (
         <>
@@ -169,7 +173,7 @@ export default function Templates() {
                         {error && (
                             <div className="text-red-500 text-center mt-4">
                                 <p>{error}</p>
-                                {(error === 'Must be logged in or sign up to create a code template.') && (
+                                {(error === 'Unauthorized. Please log in.') && (
                                     <div className="flex space-x-4 justify-center mt-2">
                                         <button
                                             onClick={redirectToLogIn}
@@ -189,7 +193,22 @@ export default function Templates() {
                             </div>
                         )}
                         {/* Success Message */}
-                        {success && <p className="text-green-500 text-center">{success}</p>}
+                        {success && (
+                            <p 
+                                className="text-green-500 text-center">
+                                    <div className="text-center mt-4">
+                                        <p> {success} </p>
+                                        <p>
+                                            <span
+                                                onClick={redirectToView}
+                                                className="text-blue-500 underline cursor-pointer"
+                                            >
+                                                View or search through your templates
+                                            </span>
+                                        </p>
+                                    </div>
+                            </p>
+                        )}
                     </form>
                 </div>
             </div>                

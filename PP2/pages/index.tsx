@@ -14,23 +14,24 @@ const Home: React.FC = () => {
     <div>
       {/* Page Content */}
       <main
+        className="dark:bg-black dark:text-white"
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center',
           padding: '20px',
-          backgroundColor: '#f9fafb',
           minHeight: '100vh',
           color: '#333',
           fontFamily: 'Arial, sans-serif',
         }}
       >
-        <h1 style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
+        <h1 className="dark:text-white text-black" style={{ fontSize: '2.5rem'}}>
           Welcome to Scriptorium
         </h1>
-        <p style={{ fontSize: '1.2rem', color: '#7f8c8d' }}>
-          Dive into the world of coding! Use our tools to execute and test your scripts.
+        <p className="dark:text-gray-200 text-gray-600" style={{ fontSize: '1.2rem'}}>
+          Dive into the world of coding! Use our tools to execute and test your
+          scripts.
         </p>
 
         {/* Flex container for side-by-side layout */}

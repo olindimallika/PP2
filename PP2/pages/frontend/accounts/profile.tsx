@@ -143,8 +143,8 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-4">Edit Profile</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black p-4">
+      <h1 className="text-2xl font-bold mb-4 dark:text-white">Edit Profile</h1>
 
       {/* display error message if any */}
       {error && <p className="text-red-500 mb-4">{error}</p>}
