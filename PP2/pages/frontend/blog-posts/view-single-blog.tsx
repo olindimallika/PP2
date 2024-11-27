@@ -33,16 +33,25 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
-  // Check if the user is an admin
   const checkAdminStatus = () => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       try {
         const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
-        setIsAdmin(decodedToken.role === 'admin');
+        console.log('Decoded Token:', decodedToken); // Debugging
+        if (decodedToken.role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+          console.error('User is not an admin.');
+        }
       } catch (error) {
-        console.error('Failed to decode token', error);
+        console.error('Failed to decode token:', error);
+        setIsAdmin(false);
       }
+    } else {
+      console.error('No token found.');
+      setIsAdmin(false);
     }
   };
 
@@ -53,14 +62,21 @@ const ViewBlogPost: React.FC = () => {
     checkAdminStatus();
   }, [id]);
 
-  // Handle adding comments
+  // Navigate to template details page
+  const handleTemplateClick = (templateId: number) => {
+    router.push(`/frontend/blog-posts/blog-link-template?id=${templateId}`);
+  };
+
+  // Add a new comment
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
+
     const token = localStorage.getItem('accessToken');
     if (!token) {
       setError('You must be logged in to post a comment.');
       return;
     }
+
     try {
       const response = await fetch('/api/blog-posts/create-comment', {
         method: 'POST',
@@ -68,17 +84,60 @@ const ViewBlogPost: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ content: newComment, blogPostId: Number(id) }),
+        body: JSON.stringify({
+          content: newComment,
+          blogPostId: Number(id),
+        }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to add comment.');
       }
+
       const newCommentData = await response.json();
       setComments((prevComments) => [newCommentData.comment, ...prevComments]);
       setNewComment('');
     } catch (err: any) {
       setError(err.message || 'An error occurred while adding the comment.');
+    }
+  };
+
+  // Add a reply to a comment
+  const handleAddReply = async (parentId: number) => {
+    if (!reply[parentId]?.trim()) return;
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setError('You must be logged in to post a reply.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog-posts/create-comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: reply[parentId],
+          blogPostId: Number(id),
+          parentId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add reply.');
+      }
+
+      const newReplyData = await response.json();
+      setComments((prevComments) => [newReplyData.comment, ...prevComments]);
+      setReplyingTo(null);
+      setReply((prev) => ({ ...prev, [parentId]: '' }));
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while adding the reply.');
     }
   };
 
@@ -89,6 +148,7 @@ const ViewBlogPost: React.FC = () => {
       setError('You must be logged in to rate.');
       return;
     }
+
     try {
       const response = await fetch('/api/blog-posts/ratings', {
         method: 'POST',
@@ -96,12 +156,18 @@ const ViewBlogPost: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isUpvote, blogPostId, commentId }),
+        body: JSON.stringify({
+          isUpvote,
+          blogPostId,
+          commentId,
+        }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to update rating.');
       }
+
       const ratingData = await response.json();
       if (blogPostId) {
         setPost((prevPost: any) => ({
@@ -126,6 +192,12 @@ const ViewBlogPost: React.FC = () => {
       setError(err.message || 'An error occurred while updating the rating.');
     }
   };
+
+  useEffect(() => {
+    if (id) {
+      fetchBlogPostAndComments();
+    }
+  }, [id]);
 
   // Handle reports for comments or blog posts
   const handleReports = async (commentId?: number, blogPostId?: number) => {
@@ -189,11 +261,18 @@ const ViewBlogPost: React.FC = () => {
   // Handle unhiding comments or blog posts (admin only)
   const handleUnhiding = async (commentId?: number, blogPostId?: number) => {
     const token = localStorage.getItem('accessToken');
-    if (!token || !isAdmin) {
+    if (!token) {
+      setError('You must be logged in to unhide content.');
+      return;
+    }
+
+    if (!isAdmin) {
       setError('You must be an admin to unhide content.');
       return;
     }
+
     try {
+      console.log('Unhide Request:', { commentId, blogPostId }); // Debugging
       const response = await fetch('/api/icr/unhide', {
         method: 'PUT',
         headers: {
@@ -202,68 +281,120 @@ const ViewBlogPost: React.FC = () => {
         },
         body: JSON.stringify({ commentId, blogPostId }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to unhide content.');
       }
+
       alert('Content unhidden successfully!');
       fetchBlogPostAndComments();
     } catch (err: any) {
+      console.error('Unhide Error:', err.message);
       setError(err.message || 'An error occurred while unhiding the content.');
     }
   };
 
-  const renderComments = (commentList: any[]) => {
-    return commentList.map((comment) => (
-      <div key={comment.id} className="border rounded-lg p-4 ml-4">
-        <p className={`font-medium ${comment.isHidden ? 'text-gray-400' : 'text-gray-800'}`}>
-          {comment.isHidden ? 'This comment is hidden.' : comment.content}
-        </p>
-        <div className="flex space-x-4 mt-2">
-          {!comment.isHidden && (
-            <>
-              <button
-                onClick={() => handleRating(true, undefined, comment.id)}
-                className="text-blue-500 hover:text-blue-600"
-              >
-                ▲ {comment.upvoteCount}
-              </button>
-              <button
-                onClick={() => handleRating(false, undefined, comment.id)}
-                className="text-red-500 hover:text-red-600"
-              >
-                ▼ {comment.downvoteCount}
-              </button>
-              <button
-                onClick={() => handleReports(comment.id)}
-                className="text-red-500 hover:text-red-600"
-              >
-                Report
-              </button>
-            </>
-          )}
-          {isAdmin && (
-            <>
-              {comment.isHidden ? (
-                <button
-                  onClick={() => handleUnhiding(comment.id)}
-                  className="text-green-500 hover:text-green-600"
-                >
-                  Unhide
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleHiding(comment.id)}
-                  className="text-gray-500 hover:text-black"
-                >
-                  Hide
-                </button>
+  const renderComments = (commentList: any[], parentId: number | null = null) => {
+    return commentList
+      .filter((comment) => comment.parentId === parentId)
+      .map((comment) => (
+        <div
+          key={comment.id}
+          className={`p-4 ${
+            parentId ? 'ml-6 border-l-2 border-gray-200' : 'ml-4 border rounded-lg'
+          }`}
+        >
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <img
+                src={comment.user?.avatar || '/default-avatar.png'}
+                alt={`${comment.user?.firstName || 'User'}'s avatar`}
+                className="w-10 h-10 rounded-full"
+              />
+            </div>
+            <div className="w-full">
+              <p className={`font-medium ${comment.isHidden ? 'text-gray-400' : 'text-gray-800'}`}>
+                {comment.isHidden ? 'This comment is hidden.' : comment.content}
+              </p>
+              <p className="text-sm text-gray-500">
+                Posted by {comment.user?.firstName} {comment.user?.lastName}
+              </p>
+              <div className="flex items-center space-x-2 mt-2">
+                {!comment.isHidden && (
+                  <>
+                    <button
+                      onClick={() => handleRating(true, undefined, comment.id)}
+                      className="text-blue-500 hover:text-blue-600"
+                    >
+                      ▲ {comment.upvoteCount}
+                    </button>
+                    <button
+                      onClick={() => handleRating(false, undefined, comment.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ▼ {comment.downvoteCount}
+                    </button>
+                    <button
+                      onClick={() => handleReports(comment.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      Report
+                    </button>
+                    <button
+                      onClick={() => setReplyingTo(comment.id)}
+                      className="mt-2 text-sm text-blue-500 underline"
+                    >
+                      Reply
+                    </button>
+                  </>
+                )}
+                {isAdmin && (
+                  <>
+                    {comment.isHidden ? (
+                      <button
+                        onClick={() => handleUnhiding(comment.id)}
+                        className="text-green-500 hover:text-green-600"
+                      >
+                        Unhide
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleHiding(comment.id)}
+                        className="text-gray-500 hover:text-black"
+                      >
+                        Hide
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+              {replyingTo === comment.id && (
+                <div className="mt-4">
+                  <textarea
+                    placeholder="Write a reply..."
+                    value={reply[comment.id] || ''}
+                    onChange={(e) =>
+                      setReply((prev) => ({ ...prev, [comment.id]: e.target.value }))
+                    }
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    rows={2}
+                  />
+                  <div className="flex justify-end mt-2">
+                    <button
+                      onClick={() => handleAddReply(comment.id)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                    >
+                      Respond
+                    </button>
+                  </div>
+                </div>
               )}
-            </>
-          )}
+              <div className="mt-4">{renderComments(commentList, comment.id)}</div>
+            </div>
+          </div>
         </div>
-      </div>
-    ));
+      ));
   };
 
   if (loading) return <p>Loading...</p>;
@@ -278,6 +409,10 @@ const ViewBlogPost: React.FC = () => {
               {post.isHidden ? 'This post is hidden.' : post.title}
             </h1>
             <p className="text-gray-600 mt-2">{post.description}</p>
+            <div className="text-gray-800 mt-4">{post.content}</div>
+            <div className="mt-4 text-sm text-gray-500">
+              Posted by {post.user?.firstName} {post.user?.lastName}
+            </div>
             <div className="mt-4 flex space-x-4">
               {!post.isHidden && (
                 <>
@@ -321,11 +456,40 @@ const ViewBlogPost: React.FC = () => {
                 </>
               )}
             </div>
-            <h2 className="text-xl font-bold mt-6">Comments</h2>
-            {renderComments(comments)}
+            {post.templates?.length > 0 && (
+              <div className="mt-6">
+                <h2 className="text-xl font-semibold">Templates</h2>
+                <ul className="list-disc pl-5">
+                  {post.templates.map((template: any) => (
+                    <li key={template.id}>
+                      <button
+                        onClick={() => handleTemplateClick(template.id)}
+                        className="text-blue-500 underline"
+                      >
+                        {template.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <h2 className="text-2xl font-bold mt-6">Comments</h2>
+            <textarea
+              placeholder="Write a comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="w-full p-3 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <button
+              onClick={handleAddComment}
+              className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Add Comment
+            </button>
+            <div className="mt-6 space-y-6">{renderComments(comments)}</div>
           </>
         ) : (
-          <p>Blog post not found.</p>
+          <p className="text-gray-500">Blog post not found.</p>
         )}
       </div>
     </div>

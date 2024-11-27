@@ -3,26 +3,21 @@ import { verifyToken } from '../../../utils/auth';
 
 export default async function handler(req, res) {
     const { method } = req;
+    const verifiedUser = verifyToken(req.headers.authorization);
 
     // Verify the method is PUT 
     if (method !== 'PUT') {
         return res.status(405).json({ message: 'Method not allowed. Use PUT.' });
     }
 
-    // Must be authenticated, got the outline from chatgpt for the logic
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.split(' ')[1];
-    const verifiedUser = verifyToken(token);
-
     if (!verifiedUser) {
-        return res.status(401).json({ error: 'Unauthorized or invalid token. Please log in!' });
+        return res.status(401).json({ error: 'Unauthorized or invalid token.' });
     }
 
-    // Check that the user is an admin
+    // check that the user is an admin
     if (verifiedUser.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized. You must be an admin!' });
     }
-
     const { blogPostId, commentId } = req.body;
 
     // Ensures only one of blogPostId or commentId is provided

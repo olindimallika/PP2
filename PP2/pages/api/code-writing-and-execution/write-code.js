@@ -1,17 +1,8 @@
 import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
-const writeFileAsync = promisify(fs.writeFile);
-const unlinkAsync = promisify(fs.unlink);
 
 export default async function handler(req, res) {
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed" });
-    }
-
     const { code, language } = req.body;
 
     const languageConfig = {
@@ -42,7 +33,5 @@ export default async function handler(req, res) {
         res.status(200).json({ stdout, stderr });
     } catch (error) {
         res.status(500).json({ error: error.message });
-    } finally {
-        await unlinkAsync(filePath).catch(() => {});
     }
 }
