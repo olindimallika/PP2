@@ -162,6 +162,7 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
+  // handle reports for comments or blogs and provide a reason for why
   const handleReports = async (commentId?: number, blogPostId?: number) => {
     const token = localStorage.getItem('accessToken'); // Retrieve the user's token
     if (!token) {
