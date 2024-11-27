@@ -15,7 +15,7 @@ const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
     return (
         <div className={`${darkMode && "dark"}`}>
             <AuthProvider>
-                <div className="flex flex-col text-center font-mono dark:bg-black">
+                <div>
                     {/* Persistent Header */}
                     <Header toggleDarkMode={toggleDarkMode} darkMode={darkMode}/>
                     
