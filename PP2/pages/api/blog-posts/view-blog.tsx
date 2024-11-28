@@ -1,24 +1,30 @@
+import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/db';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'GET') {
         const { templateId } = req.query;
 
-        // get all associated blog posts for a given code template id
+        // Ensure templateId is provided and is a valid number
+        if (!templateId || isNaN(Number(templateId))) {
+            return res.status(400).json({ error: 'Invalid or missing templateId.' });
+        }
+
+        // Get all associated blog posts for a given code template ID
         try {
             const template = await prisma.template.findUnique({
                 where: {
                     id: Number(templateId),
                 },
-                // from gpt, asked how to generate associated blog posts of a given code template
+                // From GPT, asked how to generate associated blog posts of a given code template
                 include: {
                     blogPosts: {
                         select: {
-                            id: true,
-                            title: true,
-                            description: true,
-                            isHidden: true,
-                            tags: true,
+                            id: true, // Blog post ID
+                            title: true, // Blog post title
+                            description: true, // Blog post description
+                            isHidden: true, // Hidden status
+                            tags: true, // Associated tags
                         },
                     },
                 },
@@ -29,11 +35,12 @@ export default async function handler(req, res) {
             }
 
             return res.status(200).json({ template });
-        } catch {
+        } catch (error) {
+            console.error('Error retrieving blog posts:', error); // Log the error for debugging
             return res.status(500).json({ error: 'Error retrieving blog posts.' });
         }
-
     } else {
+        // Handle unsupported HTTP methods
         return res.status(405).json({ error: 'Method not allowed.' });
     }
 }
