@@ -1,7 +1,17 @@
 import React, { useState, ChangeEvent, useEffect, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 
-const ModifyTemplate: React.FC = () => {
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { cpp } from "@codemirror/lang-cpp";
+import { java } from "@codemirror/lang-java";
+import { go } from "@codemirror/lang-go";
+import { php } from "@codemirror/lang-php";
+import { rust } from "@codemirror/lang-rust";
+import { sql } from '@codemirror/lang-sql';
+
+const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
     const [modifiedCode, setModifiedCode] = useState<string>('');
 
     const [error, setError] = useState<string>('');
@@ -19,14 +29,26 @@ const ModifyTemplate: React.FC = () => {
     const router = useRouter();
     const { id } = router.query; 
 
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const highlightRef = useRef<HTMLDivElement>(null);  
-
     const [language, setLanguage] = useState<string>('javascript');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [output, setOutput] = useState<string>('');
     const [codeError, setCodeError] = useState<{ type: string; message: string } | null>(null);
     const [logs, setLogs] = useState<string | null>(null);
+
+    const theme = darkMode ? "dark" : "light";
+
+    const languageExtensions: { [key: string]: any } = {
+        javascript: javascript(),
+        python: python(),
+        c: cpp(),
+        cpp: cpp(),
+        csharp: cpp(),
+        java: java(),
+        go: go(),
+        php: php(),
+        rust: rust(),
+        sql: sql(),
+    };
 
     // only need initially, to get original template to modify or run
     const fetchTemplate = async () => {
@@ -98,11 +120,6 @@ const ModifyTemplate: React.FC = () => {
             setIsLoading(false);
         }
     };
-
-    const handleCodeModified = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        setTemplate({ ...template, code: e.target.value });
-        setModifiedCode(e.target.value);
-    }
 
     const handleRun = async () => {
         setIsLoading(true);
@@ -204,18 +221,6 @@ const ModifyTemplate: React.FC = () => {
 
     };
 
-    const syncScroll = () => {
-        if (textareaRef.current && highlightRef.current) {
-            highlightRef.current.scrollTop = textareaRef.current.scrollTop;
-            highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
-        }
-    };
-
-    const generateLineNumbers = () => {
-        const lines = template.code.split('\n').length;
-        return Array.from({ length: lines }, (_, i) => i + 1).join('\n');
-    };
-
     const fetchLogs = async () => {
         try {
             const response = await fetch('/api/logs');
@@ -233,7 +238,7 @@ const ModifyTemplate: React.FC = () => {
     }, [id]);
     
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-slate-800 py-8">
             <div className="bg-white shadow-lg rounded-lg p-12 w-full max-w-3xl">
                 <h1 className="text-2xl font-bold text-center mb-6 text-black">Run/Modify Code Templates</h1>
 
@@ -244,53 +249,53 @@ const ModifyTemplate: React.FC = () => {
                             
                             <div className="grid grid-cols-5 gap-3">
                                 <label htmlFor="language" className="text-black py-2 px-8">Language:</label>
-                                <select id="language" className="text-black bg-blue-600 rounded-lg p-2" value={language} onChange={(e) => setLanguage(e.target.value)}>
+                                <select className="bg-blue-700 text-white w-full p-2 rounded-md text-base" id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
                                     <option value="javascript">JavaScript</option>
                                     <option value="python">Python</option>
                                     <option value="c">C</option>
                                     <option value="cpp">C++</option>
+                                    <option value="csharp">C#</option>
                                     <option value="java">Java</option>
-                                    <option value="ruby">Ruby</option>
                                     <option value="go">Go</option>
                                     <option value="php">PHP</option>
-                                    <option value="swift">Swift</option>
-                                    <option value="haskell">Haskell</option>
+                                    <option value="rust">Rust</option>
+                                    <option value="sql">SQL</option>
                                 </select>
                                 <button 
                                     type="submit"
-                                    className="block px-4 rounded-lg bg-blue-700 hover:bg-blue-800">
+                                    className="text-white block px-4 rounded-lg bg-blue-700 hover:bg-blue-800">
                                         {"Modify"}
                                 </button>   
                                 <button 
-                                    className="block px-6 rounded-lg bg-blue-700 hover:bg-blue-800"
+                                    className="text-white block px-6 rounded-lg bg-blue-700 hover:bg-blue-800"
                                     disabled={isLoading}
                                     onClick={handleRun}>
                                     {isLoading ? 'Running...' : 'Run'}
                                 </button> 
                                 <button 
-                                    className="block px-8 rounded-lg bg-blue-700 hover:bg-blue-800"
+                                    className="text-white block px-8 rounded-lg bg-blue-700 hover:bg-blue-800"
                                     type="button" 
                                     onClick={fetchLogs}>
                                     Show Logs
                                 </button>
                             </div>
 
-                            <div className="flex relative mt-4 bg-zinc-900 text-white border rounded-md overflow-y-auto font-mono text-sm">
-                                <div className="bg-zinc-800 text-right select-none leading-6 py-2.5 pl-2.5 pt-2.5">
-                                    <pre>{generateLineNumbers()}</pre>
-                                </div>
-                                        
-                                <textarea
-                                    id="code"
-                                    ref={textareaRef}
-                                    className="bg-transparent caret-white text-white text-s overflow-y-auto w-full p-2.5 pt-3 outline-none"
-                                    value={template.code}
-                                    onChange={handleCodeModified}
-                                    spellCheck={false}
-                                    placeholder="Enter your code here..."
-                                    onScroll={syncScroll}
-                                />
-                            </div>
+                            <label className="block mb-2 text-stone-800 text-base font-bold" htmlFor="code">Code:</label>
+                            {/* CodeMirror Editor, specific CodeMirror syntax from youtube video "Javascript CodeMirror Syntax Highlighter Example to Highlight Source Code in Browser Full Example" by freemediatools and chatgpt*/}
+                            <CodeMirror
+                                value={template.code}
+                                height="200px"
+                                theme={theme}
+                                extensions={[languageExtensions[language]]}
+                                onChange={(value) => {
+                                    setTemplate({ ...template, code: value });
+                                    setModifiedCode(value)
+                                }}
+                                style={{
+                                    border: "1px solid #ddd",
+                                    marginTop: "20px",
+                                }}
+                            />
                         </div>
                     </div>
 
@@ -347,7 +352,7 @@ const ModifyTemplate: React.FC = () => {
                                 {resultTemplate.tags.map((tag: any) => tag.name).join(', ')}
                         </p>
                         <button 
-                            className="block p-4 text-white rounded-lg bg-blue-700 hover:bg-blue-800"
+                            className="block p-4 md:mx-32 md:w-2/5 sm:mx-16 sm:w-3/5 text-white rounded-lg bg-blue-700 hover:bg-blue-800"
                             type="button" 
                             onClick={handleFork}>
                                 Fork this template

@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const accessToken = generateAccessToken({ userId: user.id, email: user.email, role: user.role });
             const refreshToken = generateRefreshToken({ userId: user.id, email: user.email, role: user.role });
 
-            return res.status(200).json({ userId: user.id, accessToken, refreshToken });
+            return res.status(200).json({ userId: user.id, role: user.role, accessToken, refreshToken });
         } catch (error) {
             console.error('Error during login:', error);
             return res.status(500).json({ message: 'Internal server error.' });
