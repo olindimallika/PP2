@@ -21,15 +21,20 @@ const Home: React.FC = () => {
           alignItems: 'center',
           textAlign: 'center',
           padding: '20px',
+          backgroundColor: '#f9fafb',
           minHeight: '100vh',
+          backgroundSize: '100% 100%',  // Stretches the image exactly to fit the container
           color: '#333',
           fontFamily: 'Arial, sans-serif',
+          backgroundImage: 'url(/scriptorium.png)', // Path to your image in the public folder
+          backgroundPosition: 'center', // Centers the image
+          backgroundRepeat: 'no-repeat', // Prevents the image from repeating
         }}
       >
-        <h1 className="dark:text-white text-black" style={{ fontSize: '2.5rem'}}>
+        <h1 style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
           Welcome to Scriptorium
         </h1>
-        <p className="dark:text-gray-200 text-gray-600" style={{ fontSize: '1.2rem'}}>
+        <p style={{ fontSize: '1.2rem', color: '#7f8c8d' }}>
           Dive into the world of coding! Use our tools to execute and test your
           scripts.
         </p>
