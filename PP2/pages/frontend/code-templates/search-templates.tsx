@@ -101,9 +101,9 @@ const SearchTemplates: React.FC = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8"> 
                     <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-y-8">
-                        <h1 className="text-2xl font-bold text-center mb-6 text-gray-500">Search All Templates</h1>
+                        <h1 className="text-2xl font-bold text-center mb-6 text-black">Search All Templates</h1>
 
                         <form onSubmit={getSearchedTemplates} className="space-y-6">
                             <input
@@ -137,7 +137,7 @@ const SearchTemplates: React.FC = () => {
                                 id="search-button"
                                 type="submit"
                                 disabled={loading}
-                                className={`block w-full p-4 ps-10 rounded-lg ${
+                                className={`block w-full p-4 ps-10 rounded-lg text-white ${
                                     loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"
                                 }`}
                             >
@@ -157,7 +157,7 @@ const SearchTemplates: React.FC = () => {
                                             <h3 className="text-black text-lg font-bold">{temp.title}</h3>
                                             <p className="text-sm text-gray-600">Template ID: {temp.id}</p>
                                             <p className="text-sm text-gray-600">{temp.explanation}</p>
-                                            <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
+                                            <div className="relative bg-gray-50 rounded-lg dark:bg-zinc-800 p-6 pt-10 h-48 overflow-scroll">
                                                 <pre>
                                                     <code className="text-sm text-violet-300 whitespace-pre">{temp.code}</code>
                                                 </pre>
