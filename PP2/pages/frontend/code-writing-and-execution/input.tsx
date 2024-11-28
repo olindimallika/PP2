@@ -16,7 +16,6 @@ const Input: React.FC<{ darkMode: boolean }> = ( { darkMode } ) => {
     const [input, setInput] = useState<string>('');
     const [output, setOutput] = useState<string>('');
     const [error, setError] = useState<{ type: string; message: string } | null>(null);
-    const [logs, setLogs] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const theme = darkMode ? "dark" : "light";
@@ -46,7 +45,6 @@ const Input: React.FC<{ darkMode: boolean }> = ( { darkMode } ) => {
         setIsLoading(true);
         setError(null);
         setOutput('');
-        setLogs(null);
 
         try {
             const response = await fetch('/api/code-writing-and-execution/input', {
@@ -74,16 +72,6 @@ const Input: React.FC<{ darkMode: boolean }> = ( { darkMode } ) => {
             });
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const fetchLogs = async () => {
-        try {
-            const response = await fetch('/api/logs');
-            const result = await response.text();
-            setLogs(result || 'No logs available.');
-        } catch {
-            setLogs('Failed to fetch logs.');
         }
     };
 
@@ -158,19 +146,7 @@ const Input: React.FC<{ darkMode: boolean }> = ( { darkMode } ) => {
                                 </pre>
                             </div>
                         )}
-                        {logs && (
-                            <div className="bg-neutral-700 text-red-100 p-2.5 rounded-md max-h-52 overflow-y-auto text-base">
-                                <h3>Logs:</h3>
-                                <pre>{logs}</pre>
-                            </div>
-                        )}
                     </div>
-                    <button 
-                        className="cursor-pointer bg-green-500 text-white border-none p-2.5 rounded-md"
-                        type="button" 
-                        onClick={fetchLogs}>
-                        Show Logs
-                    </button>
                 </form>
             </div>
         </div>

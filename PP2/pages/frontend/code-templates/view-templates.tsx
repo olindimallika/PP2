@@ -206,7 +206,7 @@ export default function SearchSavedTemplates() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8 dark:bg-slate-800">
                     <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-4">
                         {/* Dropdown for either saving or searching saved templates */}
                         <select 
@@ -371,7 +371,7 @@ export default function SearchSavedTemplates() {
                             <button 
                                 id="search-button"
                                 type="submit"
-                                className="block w-full p-4 ps-10 rounded-lg bg-blue-700 hover:bg-blue-800 invisible">
+                                className="text-white block w-full p-4 ps-10 rounded-lg bg-blue-700 hover:bg-blue-800 invisible">
                                 {"Search"}
                             </button> 
 

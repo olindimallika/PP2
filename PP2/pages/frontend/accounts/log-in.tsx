@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../../auth-context'; // Update this path to where AuthContext is located
+import { useAuth } from '../../auth-context'; // Update this path to where AuthContext is located
 
 const LoginPage: React.FC = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -41,6 +41,8 @@ const LoginPage: React.FC = () => {
 
             // Save the access token in localStorage
             localStorage.setItem('accessToken', responseData.accessToken);
+            localStorage.setItem('userId', JSON.stringify(responseData.userId)); // for searching and viewing a user's saved templates
+            localStorage.setItem('role', responseData.role); // for checking if user is an admin
 
             // Update the global authentication state by passing the accessToken
             login(responseData.accessToken);
@@ -63,7 +65,7 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black py-8">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-slate-800 py-8">
             <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
                 <h1 className="text-2xl font-bold text-center mb-6">Log In</h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
