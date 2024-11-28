@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-tomorrow.css';
-import 'prismjs/components/prism-javascript.min.js';
-import 'prismjs/components/prism-python.min.js';
-import 'prismjs/components/prism-c.min.js';
-import 'prismjs/components/prism-cpp.min.js';
-import 'prismjs/components/prism-java.min.js';
-import 'prismjs/components/prism-ruby.min.js';
-import 'prismjs/components/prism-go.min.js';
-import 'prismjs/components/prism-php.min.js';
-import 'prismjs/components/prism-haskell.min.js';
-import 'prismjs/components/prism-rust.min.js';
-//please 
+import React, { useState } from 'react';
+
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { cpp } from "@codemirror/lang-cpp";
+import { java } from "@codemirror/lang-java";
+import { go } from "@codemirror/lang-go";
+import { php } from "@codemirror/lang-php";
+import { rust } from "@codemirror/lang-rust";
 
 const Input: React.FC = () => {
     const [code, setCode] = useState<string>('');
@@ -22,38 +18,15 @@ const Input: React.FC = () => {
     const [logs, setLogs] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const highlightRef = useRef<HTMLDivElement>(null);
-
-    const highlightCode = (code: string, language: string) => {
-        const languageMap: { [key: string]: string } = {
-            javascript: 'javascript',
-            python: 'python',
-            c: 'c',
-            cpp: 'cpp',
-            java: 'java',
-            ruby: 'ruby',
-            go: 'go',
-            php: 'php',
-            rust: 'rust',
-            swift: 'swift',
-            haskell: 'haskell',
-        };
-        const lang = languageMap[language] || 'javascript';
-
-        try {
-            return Prism.highlight(code, Prism.languages[lang], lang);
-        } catch (error) {
-            console.error('Error highlighting code:', error);
-            return code;
-        }
-    };
-
-    const syncScroll = () => {
-        if (textareaRef.current && highlightRef.current) {
-            highlightRef.current.scrollTop = textareaRef.current.scrollTop;
-            highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
-        }
+    const languageExtensions: { [key: string]: any } = {
+        javascript: javascript(),
+        python: python(),
+        c: cpp(),
+        cpp: cpp(),
+        java: java(),
+        go: go(),
+        php: php(),
+        rust: rust(),
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -108,19 +81,8 @@ const Input: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        if (highlightRef.current) {
-            highlightRef.current.innerHTML = highlightCode(code, language);
-        }
-    }, [code, language]);
-
-    const generateLineNumbers = () => {
-        const lines = code.split('\n').length;
-        return Array.from({ length: lines }, (_, i) => i + 1).join('\n');
-    };
-
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
+        <div className="flex flex-col items-center justify-center min-h-screen dark:bg-black bg-gray-100 py-8">
             <div className="w-10/12 max-w-screen-xl m-14 m-auto p-5 bg-white shadow-md rounded-lg h-full">
                 <h1 className="text-center text-stone-800">Code Execution</h1>
                 <form onSubmit={handleSubmit}>
@@ -133,36 +95,24 @@ const Input: React.FC = () => {
                                 <option value="c">C</option>
                                 <option value="cpp">C++</option>
                                 <option value="java">Java</option>
-                                <option value="ruby">Ruby</option>
                                 <option value="go">Go</option>
                                 <option value="php">PHP</option>
                                 <option value="rust">Rust</option>
-                                <option value="swift">Swift</option>
-                                <option value="haskell">Haskell</option>
                             </select>
 
                             <label className="block mb-2 text-stone-800 text-base font-bold" htmlFor="code">Code:</label>
-                            <div className="flex relative bg-neutral-800 text-white border border-solid border-neutral-200 rounded-md overflow-hidden font-mono text-base leading-6">
-                                <div className="py-2.5 pl-2.5 bg-zinc-800 text-zinc-400 text-right select-none text-base leading-6">
-                                    <pre className="m-0 font-mono text-base leading-6">{generateLineNumbers()}</pre>
-                                </div>
-
-                                <div
-                                    className="absolute top-0 left-4 right-0 h-full bottom-0 pointer-events-none z-0 overflow-y-auto p-2.5 font-mono text-base leading-6 whitespace-pre-wrap break-words text-slate-50"
-                                    ref={highlightRef}
-                                    aria-hidden="true"
-                                >
-                                </div>
-                                <textarea
-                                    id="code"
-                                    ref={textareaRef}
-                                    className="absolute top-0 left-4 right-0 bottom-0 bg-transparent text-transparent caret-white font-mono text-base leading-6 p-2.5 border-none outline-none resize-none overflow-y-auto z-10 h-full w-full"
-                                     value={code}
-                                    onChange={(e) => setCode(e.target.value)}
-                                    spellCheck={false}
-                                    onScroll={syncScroll}
-                                />
-                            </div>
+                            {/* CodeMirror Editor, specific CodeMirror syntax from youtube video "Javascript CodeMirror Syntax Highlighter Example to Highlight Source Code in Browser Full Example" by freemediatools and chatgpt*/}
+                            <CodeMirror
+                                value={code}
+                                height="200px"
+                                theme={"dark"}
+                                extensions={[languageExtensions[language]]}
+                                onChange={(value) => setCode(value)}
+                                style={{
+                                    border: "1px solid #ddd",
+                                    marginTop: "20px",
+                                }}
+                            />
                         </div>
 
                         <div className="flex flex-1 flex-col">
