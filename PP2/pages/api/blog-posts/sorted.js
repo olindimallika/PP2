@@ -133,8 +133,11 @@ export default async function handler(req, res) {
     const skip = (pageNum - 1) * pageSizeNum;
     const take = pageSizeNum;
 
-    // Fetch all blog posts to calculate ratings (not paginated)
+    // Fetch all visible blog posts to calculate ratings (not paginated)
     const allBlogPosts = await prisma.blogPost.findMany({
+      where: {
+        isHidden: false, // Exclude hidden blog posts
+      },
       select: {
         id: true,
         title: true,
@@ -142,6 +145,9 @@ export default async function handler(req, res) {
         upvoteCount: true,
         downvoteCount: true,
         comments: {
+          where: {
+            isHidden: false, // Exclude hidden comments
+          },
           select: {
             id: true,
             content: true,

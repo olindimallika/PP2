@@ -42,10 +42,8 @@ const LoginPage: React.FC = () => {
             // Save the access token in localStorage
             localStorage.setItem('accessToken', responseData.accessToken);
 
-            localStorage.setItem('userId', JSON.stringify(responseData.userId));
-
-            // Update the global authentication state
-            login(); 
+            // Update the global authentication state by passing the accessToken
+            login(responseData.accessToken);
 
             setLoading(false);
             setError('');
@@ -66,7 +64,7 @@ const LoginPage: React.FC = () => {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black py-8">
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md text-black">
+            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
                 <h1 className="text-2xl font-bold text-center mb-6">Log In</h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <input

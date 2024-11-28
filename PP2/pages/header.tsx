@@ -7,8 +7,9 @@ type HeaderProps = {
     darkMode: boolean;
 };
 
+
 const Header: React.FC<HeaderProps> = ({ toggleDarkMode, darkMode }) => {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth(); // Use `user` to check the role
 
   return (
     <header
@@ -33,7 +34,8 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, darkMode }) => {
             gap: '15px',
           }}
         >
-          <li>
+
+<li>
             <button 
                 className="dark:bg-white dark:text-black bg-black text-white px-5 rounded-full font-semibold border-2 border-black hover:scale-105 transition-all duration-300"
                 onClick={toggleDarkMode}
@@ -41,6 +43,8 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, darkMode }) => {
                 Theme: {darkMode ? "Dark" : "Light"}
             </button>
           </li>  
+
+
           <li>
             <Link
               href="/"
@@ -97,9 +101,6 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, darkMode }) => {
             </ul>
           </li>
 
-
-
-         
           <li>
             <Link href="/frontend/code-writing-and-execution/input">Code Execution</Link>
           </li>
@@ -113,15 +114,37 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, darkMode }) => {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  backgroundColor: 'gray',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  color: 'white',
+                  overflow: 'hidden',
                   cursor: 'pointer',
                 }}
               >
-                U
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={`${user.firstName || 'User'}'s avatar`}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: 'gray',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      color: 'white',
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    U
+                  </div>
+                )}
               </div>
               <ul className="dropdown-menu">
                 <li>
@@ -140,6 +163,20 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, darkMode }) => {
                     View or Search Your Templates
                   </Link>
                 </li>
+
+                {/* Conditionally render "Manage Reports" based on user role */}
+                {user?.role === 'admin' && (
+                  <li>
+                    <Link href="/frontend/icr/admin-sort">Manage Reports</Link>
+                  </li>
+                )}
+                {/* Conditionally render "Manage Hidden Content" based on user role */}
+                {user?.role === 'admin' && (
+                  <li>
+                    <Link href="/frontend/icr/unhide">Manage Hidden Content</Link>
+                  </li>
+                )}
+
                 <li style={{ color: 'red', cursor: 'pointer' }} onClick={logout}>
                   Logout
                 </li>

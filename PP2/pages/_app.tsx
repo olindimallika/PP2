@@ -5,14 +5,13 @@ import Header from './header'; // Ensure this path is correct
 import { AuthProvider } from './auth-context'; // Update the path to your AuthContext file
 
 const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
-    
     const [darkMode, setDarkMode] = React.useState(false);
     
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
     };
 
-    return (
+  return (
         <div className={`${darkMode && "dark"}`}>
             <AuthProvider>
                 <div>
