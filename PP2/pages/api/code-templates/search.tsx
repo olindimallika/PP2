@@ -1,19 +1,28 @@
+import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/db';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { titleQuery, explanationQuery, tagQuery, page = 1, pageSize = 10 } = req.body;
+    const { titleQuery, explanationQuery, tagQuery, page = 1, pageSize = 10 } = req.body as {
+        titleQuery?: string;
+        explanationQuery?: string;
+        tagQuery?: string;
+        page?: number;
+        pageSize?: number;
+    };
 
+    // Ensure at least one search field is provided
     if (!titleQuery && !explanationQuery && !tagQuery) {
         return res.status(400).json({ error: 'At least one search field must be filled.' });
     }
 
     try {
-        const pageNum = parseInt(page, 10) || 1;
-        const pageSizeNum = parseInt(pageSize, 10) || 10;
+        // Parse page and pageSize values, ensure they are valid numbers
+        const pageNum = parseInt(page.toString(), 10) || 1;
+        const pageSizeNum = parseInt(pageSize.toString(), 10) || 10;
         const skip = (pageNum - 1) * pageSizeNum;
 
         // Build the search query dynamically
@@ -30,7 +39,7 @@ export default async function handler(req, res) {
                           },
                       }
                     : null,
-            ].filter(Boolean),
+            ].filter(Boolean), // Remove null entries
         };
 
         // Fetch total count of matching templates
@@ -44,12 +53,12 @@ export default async function handler(req, res) {
             skip,
             take: pageSizeNum,
             select: {
-                id: true,
-                title: true,
-                explanation: true,
-                code: true,
+                id: true, // Template ID
+                title: true, // Template title
+                explanation: true, // Template explanation
+                code: true, // Template code
                 tags: {
-                    select: { name: true },
+                    select: { name: true }, // Associated tags
                 },
             },
         });
@@ -63,7 +72,7 @@ export default async function handler(req, res) {
             totalPages,
         });
     } catch (error) {
-        console.error('Error retrieving templates:', error);
+        console.error('Error retrieving templates:', error); // Log the error for debugging
         return res.status(500).json({ error: 'Error retrieving templates' });
     }
 }

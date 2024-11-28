@@ -1,16 +1,17 @@
-//for managing a user's blog posts
+import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/db';
 import { verifyToken } from '../../../utils/auth';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { method } = req;
 
     if (method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' }); // only allow GET requests
     }
 
-    // verify the user's token to make sure they're are logged in
-    const verifiedUser = verifyToken(req.headers.authorization);
+    // verify the user's token to make sure they're logged in
+    const token = req.headers.authorization || '';
+    const verifiedUser = verifyToken(token);
     if (!verifiedUser) {
         return res.status(401).json({ error: 'Unauthorized or invalid token. Please log in!' });
     }
@@ -28,8 +29,8 @@ export default async function handler(req, res) {
                 tags: true, // Include tags associated with each blog post
                 templates: {
                     select: {
-                        id: true,
-                        title: true,
+                        id: true, // Include the ID of each template
+                        title: true, // Include the title of each template
                     },
                 },
             },

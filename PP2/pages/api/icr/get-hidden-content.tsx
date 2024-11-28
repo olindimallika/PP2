@@ -1,9 +1,12 @@
+import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/db';
 import { verifyToken } from '../../../utils/auth';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Verify token
-  const verifiedUser = verifyToken(req.headers.authorization);
+  const token = req.headers.authorization || '';
+  const verifiedUser = verifyToken(token);
+
   if (!verifiedUser) {
     return res.status(401).json({ error: 'Unauthorized or invalid token. Please log in!' });
   }
@@ -22,21 +25,21 @@ export default async function handler(req, res) {
     // Fetch hidden blog posts
     const hiddenPosts = await prisma.blogPost.findMany({
       where: {
-        isHidden: true,
+        isHidden: true, // Fetch only hidden posts
       },
       select: {
-        id: true,
-        title: true,
-        description: true,
+        id: true, // Blog post ID
+        title: true, // Blog post title
+        description: true, // Blog post description
         user: {
           select: {
-            firstName: true,
-            lastName: true,
+            firstName: true, // Author's first name
+            lastName: true, // Author's last name
           },
         },
         tags: {
           select: {
-            name: true,
+            name: true, // Associated tags
           },
         },
       },
@@ -45,27 +48,28 @@ export default async function handler(req, res) {
     // Fetch hidden comments
     const hiddenComments = await prisma.comment.findMany({
       where: {
-        isHidden: true,
+        isHidden: true, // Fetch only hidden comments
       },
       select: {
-        id: true,
-        content: true,
-        blogPostId: true,
+        id: true, // Comment ID
+        content: true, // Comment content
+        blogPostId: true, // Associated blog post ID
         user: {
           select: {
-            firstName: true,
-            lastName: true,
+            firstName: true, // Author's first name
+            lastName: true, // Author's last name
           },
         },
       },
     });
 
+    // Return hidden posts and comments
     return res.status(200).json({
       posts: hiddenPosts,
       comments: hiddenComments,
     });
   } catch (error) {
-    console.error('Error fetching hidden content:', error);
+    console.error('Error fetching hidden content:', error); // Log the error for debugging
     return res.status(500).json({ error: 'Error fetching hidden content.' });
   }
 }

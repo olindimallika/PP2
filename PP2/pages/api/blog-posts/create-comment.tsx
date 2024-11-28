@@ -1,9 +1,11 @@
+import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/db';
 import { verifyToken } from '../../../utils/auth';
 
-export default async function handler(req, res) {
-    //check if user is authenticated
-    const verifiedUser = verifyToken(req.headers.authorization);
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    // check if user is authenticated
+    const token = req.headers.authorization || '';
+    const verifiedUser = verifyToken(token);
 
     if (!verifiedUser) {
         return res.status(401).json({ error: 'Unauthorized or invalid token. Please log-in!' });
@@ -13,7 +15,12 @@ export default async function handler(req, res) {
     const userId = verifiedUser.userId;
 
     if (req.method === 'POST') {
-        const { content, blogPostId, parentId, rating } = req.body;
+        const { content, blogPostId, parentId, rating } = req.body as {
+            content: string;
+            blogPostId: number;
+            parentId?: number;
+            rating?: number;
+        };
 
         if (!content) {
             return res.status(400).json({ error: 'Please fill in content and userId.' });
@@ -24,6 +31,7 @@ export default async function handler(req, res) {
         }
 
         try {
+            // Validate the blog post
             const blogPost = await prisma.blogPost.findUnique({
                 where: {
                     id: Number(blogPostId),
@@ -43,6 +51,7 @@ export default async function handler(req, res) {
                     return res.status(400).json({ error: 'Invalid parentId.' });
                 }
 
+                // Validate the parent comment
                 const parent = await prisma.comment.findUnique({
                     where: {
                         id: Number(parentId),
@@ -58,6 +67,7 @@ export default async function handler(req, res) {
                 }
             }
 
+            // Create the comment
             const comment = await prisma.comment.create({
                 data: {
                     content,
@@ -67,9 +77,9 @@ export default async function handler(req, res) {
                     rating,
                 },
                 include: {
-                    blogPost: true,
-                    parent: true,
-                    user: { select: { firstName: true, lastName: true, avatar: true } }, // Include avatar
+                    blogPost: true, // Include the blog post details
+                    parent: true, // Include the parent comment details
+                    user: { select: { firstName: true, lastName: true, avatar: true } }, // Include avatar and user details
                 },
             });
 

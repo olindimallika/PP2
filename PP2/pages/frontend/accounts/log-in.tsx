@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../auth-context'; // Update this path to where AuthContext is located
+import { useAuth } from '../../../auth-context'; // Update this path to where AuthContext is located
 
 const LoginPage: React.FC = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
