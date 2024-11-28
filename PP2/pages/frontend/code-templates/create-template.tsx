@@ -1,3 +1,4 @@
+//with dark mode
 import React, { FormEvent, useState, useRef } from "react";
 import Head from "next/head";
 import { useRouter } from 'next/router';
@@ -98,16 +99,16 @@ export default function Templates() {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8">
                 {/* Form Container */}
-                <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-                    <h1 className="text-2xl font-bold text-center mb-6 text-black">Create Template</h1>
+                <div className="bg-white shadow-lg rounded-lg p-8 w-full  dark:bg-zinc-900 max-w-lg">
+                    <h1 className="text-2xl font-bold text-center mb-6 text-black dark:text-white">Create Template</h1>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Template Title Input */}
                         <input 
                             type="text" 
                             id="title" 
-                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                             placeholder="Template Title" 
                             value={title} 
                             onChange={(e) => setTitle(e.target.value)}>
@@ -116,7 +117,7 @@ export default function Templates() {
                         <input 
                             type="text" 
                             id="explanation" 
-                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                             placeholder="Explanation" 
                             value={explanation} 
                             onChange={(e) => setExplanation(e.target.value)}>
@@ -125,15 +126,15 @@ export default function Templates() {
                         {/* Template Code */}
                         <div className="flex gap-5 mb-5">
                             <div className="flex-1">
-                                <div className="flex relative bg-zinc-900 text-white border rounded-md overflow-y-auto font-mono text-sm">
-                                    <div className="bg-zinc-800 text-right select-none leading-6 py-2.5 pl-2.5 pt-2.5">
-                                        <pre>{generateLineNumbers()}</pre>
+                                <div className="flex relative bg-gray-50 text-black dark:bg-zinc-900  border whitespace-pre dark:text-white rounded-md overflow-y-auto font-mono text-sm">
+                                    <div className="dark:bg-zinc-800 text-right  select-none leading-6 py-2.5 pl-2.5 pt-2.5 dark:text-white">
+                                        <pre>{generateLineNumbers()}</pre> 
                                     </div>
                                         
                                     <textarea
                                         id="code"
                                         ref={textareaRef}
-                                        className="bg-transparent caret-white text-white text-s overflow-y-auto w-full p-2.5 pt-3 outline-none"
+                                        className="bg-transparent dark:caret-white text-violet-500  dark:text-violet-400  text-s overflow-y-auto w-full p-2.5 pt-3 outline-none text-sm whitespace-pre dark:bg-zinc-700 "
                                         value={code}
                                         onChange={(e) => setCode(e.target.value)}
                                         spellCheck={false}
@@ -148,7 +149,7 @@ export default function Templates() {
                         <input 
                             type="text" 
                             id="tags" 
-                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                             placeholder="Tags (comma-separated)" 
                             value={tags} onChange={(e) => setTags(e.target.value)}>
                         </input>
@@ -156,7 +157,7 @@ export default function Templates() {
                         <input 
                             type="text" 
                             id="blogPosts" 
-                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                             placeholder=" Blog Post IDs (comma-separated)" 
                             value={blogs} onChange={(e) => setBlogs(e.target.value)}>
                         </input>
@@ -215,5 +216,232 @@ export default function Templates() {
         </>
     );
 }
+
+
+
+
+
+
+
+
+// import React, { FormEvent, useState, useRef } from "react";
+// import Head from "next/head";
+// import { useRouter } from 'next/router';
+
+// export default function Templates() {
+//     const [title, setTitle] = React.useState("");
+//     const [explanation, setExplanation] = React.useState("");
+//     const [code, setCode] = React.useState("");
+//     const [tags, setTags] = React.useState("");
+//     const [blogs, setBlogs] = React.useState("");
+
+//     const [error, setError] = React.useState("");
+//     const [success, setSuccess] = React.useState("");
+//     const [loading, setLoading] = useState<boolean>(false);
+
+//     const router = useRouter();
+
+//     const textareaRef = useRef<HTMLTextAreaElement>(null);
+//     const highlightRef = useRef<HTMLDivElement>(null);  
+
+//     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+//         // preventing default form submission behaviour
+//         e.preventDefault();
+//         setLoading(true);
+
+//         const token = localStorage.getItem('accessToken');
+//         if (!token) {
+//             setError('Must be logged in or sign up to create a code template.');
+//             setLoading(false);
+//             return;
+//         }
+
+//         const blogIdsArray = blogs.split(',').map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+
+//         try {
+//             const response = await fetch('/api/code-templates/save', {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     Authorization: `Bearer ${token}`,
+//                 },
+//                 body: JSON.stringify({
+//                     title: title,
+//                     explanation: explanation,
+//                     code: code,
+//                     tags: tags.split(","), 
+//                     blogPostIds: blogIdsArray
+//                 })
+//             });
+
+//             if (!response.ok) {
+//                 if (response.status === 401) {
+//                     throw new Error('Unauthorized. Please log in.');
+//                 }
+//                 const errorData = await response.json();
+//                 throw new Error(errorData.error || 'An error occurred while creating the code template.');
+//             }
+
+//             await response.json();
+//             setSuccess('Template saved successfully!');
+//             setError('');                    
+//         } catch (err: any) {
+//             setError(err.message || 'An error occurred');
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     const syncScroll = () => {
+//         if (textareaRef.current && highlightRef.current) {
+//             highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+//             highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+//         }
+//     };
+
+//     const generateLineNumbers = () => {
+//         const lines = code.split('\n').length;
+//         return Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+//     };
+
+//     const redirectToLogIn = () => {
+//         router.push(`/frontend/accounts/log-in`);
+//     };
+
+//     const redirectToSignUp = () => {
+//         router.push(`/frontend/accounts/sign-up`);
+//     };
+
+//     const redirectToView = () => {
+//         router.push(`/frontend/code-templates/view-templates`);
+//     }
+
+//     return (
+//         <>
+//             <Head>
+//                 <title>Scriptorium</title>
+//                 <meta name="description" content="Generated by create next app" />
+//                 <meta name="viewport" content="width=device-width, initial-scale=1" />
+//                 <link rel="icon" href="/favicon.ico" />
+//             </Head>
+//             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
+//                 {/* Form Container */}
+//                 <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
+//                     <h1 className="text-2xl font-bold text-center mb-6 text-black">Create Template</h1>
+//                     <form onSubmit={handleSubmit} className="space-y-6">
+//                         {/* Template Title Input */}
+//                         <input 
+//                             type="text" 
+//                             id="title" 
+//                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+//                             placeholder="Template Title" 
+//                             value={title} 
+//                             onChange={(e) => setTitle(e.target.value)}>
+//                         </input>
+//                         {/* Template Explanation Input */}
+//                         <input 
+//                             type="text" 
+//                             id="explanation" 
+//                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+//                             placeholder="Explanation" 
+//                             value={explanation} 
+//                             onChange={(e) => setExplanation(e.target.value)}>
+//                         </input>
+                        
+//                         {/* Template Code */}
+//                         <div className="flex gap-5 mb-5">
+//                             <div className="flex-1">
+//                                 <div className="flex relative bg-zinc-900 text-white border rounded-md overflow-y-auto font-mono text-sm">
+//                                     <div className="bg-zinc-800 text-right select-none leading-6 py-2.5 pl-2.5 pt-2.5">
+//                                         <pre>{generateLineNumbers()}</pre>
+//                                     </div>
+                                        
+//                                     <textarea
+//                                         id="code"
+//                                         ref={textareaRef}
+//                                         className="bg-transparent caret-white text-white text-s overflow-y-auto w-full p-2.5 pt-3 outline-none"
+//                                         value={code}
+//                                         onChange={(e) => setCode(e.target.value)}
+//                                         spellCheck={false}
+//                                         placeholder="Enter your code here..."
+//                                         onScroll={syncScroll}
+//                                     />
+//                                 </div>
+//                             </div>
+//                         </div>
+
+//                         {/* Template Tags Input */}
+//                         <input 
+//                             type="text" 
+//                             id="tags" 
+//                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+//                             placeholder="Tags (comma-separated)" 
+//                             value={tags} onChange={(e) => setTags(e.target.value)}>
+//                         </input>
+//                         {/* Blog Post IDs Input */}
+//                         <input 
+//                             type="text" 
+//                             id="blogPosts" 
+//                             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black"
+//                             placeholder=" Blog Post IDs (comma-separated)" 
+//                             value={blogs} onChange={(e) => setBlogs(e.target.value)}>
+//                         </input>
+//                         <button
+//                             type="submit"
+//                             disabled={loading}
+//                             className={`w-full bg-blue-500 text-white font-bold py-3 rounded-lg ${
+//                                 loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+//                             }`}
+//                         >
+//                             {loading ? 'Creating...' : 'Create Template'}
+//                         </button>
+                            
+//                         {error && (
+//                             <div className="text-red-500 text-center mt-4">
+//                                 <p>{error}</p>
+//                                 {(error === 'Unauthorized. Please log in.') && (
+//                                     <div className="flex space-x-4 justify-center mt-2">
+//                                         <button
+//                                             onClick={redirectToLogIn}
+//                                             className="text-blue-500 underline cursor-pointer"
+//                                         >
+//                                             Log in
+//                                         </button>
+//                                         <span>|</span>
+//                                         <button
+//                                             onClick={redirectToSignUp}
+//                                             className="text-blue-500 underline cursor-pointer"
+//                                         >
+//                                             Sign up
+//                                         </button>
+//                                     </div>
+//                                 )}
+//                             </div>
+//                         )}
+//                         {/* Success Message */}
+//                         {success && (
+//                             <p 
+//                                 className="text-green-500 text-center">
+//                                     <div className="text-center mt-4">
+//                                         <p> {success} </p>
+//                                         <p>
+//                                             <span
+//                                                 onClick={redirectToView}
+//                                                 className="text-blue-500 underline cursor-pointer"
+//                                             >
+//                                                 View or search through your templates
+//                                             </span>
+//                                         </p>
+//                                     </div>
+//                             </p>
+//                         )}
+//                     </form>
+//                 </div>
+//             </div>                
+//         </>
+//     );
+// }
+
+
 
 

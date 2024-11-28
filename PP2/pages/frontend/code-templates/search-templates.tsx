@@ -101,11 +101,11 @@ const SearchTemplates: React.FC = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8"> 
-                    <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-y-8">
-                        <h1 className="text-2xl font-bold text-center mb-6 text-black">Search All Templates</h1>
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8">
+                    <div className="flex flex-col items-center justify-center bg-white dark:bg-zinc-900 shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-y-8">
+                        <h1 className="text-2xl font-bold text-center mb-6 text-black dark:text-white">Search All Templates</h1>
 
-                        <form onSubmit={getSearchedTemplates} className="space-y-6">
+                        <form onSubmit={getSearchedTemplates} className="space-y-6 w-full">
                             <input
                                 id="title-bar"
                                 type="text"
@@ -113,7 +113,7 @@ const SearchTemplates: React.FC = () => {
                                 placeholder="Search by title"
                                 value={titleQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTitleQuery(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full p-3 border text-black dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
                             />
                             <input
                                 id="exp-bar"
@@ -122,7 +122,7 @@ const SearchTemplates: React.FC = () => {
                                 placeholder="Search by explanation"
                                 value={explanationQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setExplanationQuery(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
                             />
                             <input
                                 id="tag-bar"
@@ -131,15 +131,13 @@ const SearchTemplates: React.FC = () => {
                                 placeholder="Search by tags"
                                 value={tagQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTagQuery(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
                             />
                             <button
                                 id="search-button"
                                 type="submit"
                                 disabled={loading}
-                                className={`block w-full p-4 ps-10 rounded-lg text-white ${
-                                    loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"
-                                }`}
+                                className={`block w-full p-4 ps-10 rounded-lg text-white ${loading ? "bg-blue-300 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800 dark:bg-blue-500 dark:hover:bg-blue-600"}`}
                             >
                                 {loading ? "Searching..." : "Search"}
                             </button>
@@ -147,33 +145,33 @@ const SearchTemplates: React.FC = () => {
 
                         {/* Show search results if any */}
                         {templateStates.length > 0 && (
-                            <div className="w-full">
-                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100">
+                            <div className="w-full mt-8">
+                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100 dark:bg-violet-800 dark:text-white">
                                     Search Results
                                 </h2>
                                 <ul className="space-y-4">
                                     {templateStates.map((temp) => (
-                                        <li key={temp.id} className="p-4 border rounded-lg shadow-sm">
-                                            <h3 className="text-black text-lg font-bold">{temp.title}</h3>
-                                            <p className="text-sm text-gray-600">Template ID: {temp.id}</p>
-                                            <p className="text-sm text-gray-600">{temp.explanation}</p>
-                                            <div className="relative bg-gray-50 rounded-lg dark:bg-zinc-800 p-6 pt-10 h-48 overflow-scroll">
+                                        <li key={temp.id} className="p-4 border dark:border-gray-600 rounded-lg shadow-sm dark:bg-zinc-800">
+                                            <h3 className="text-black dark:text-white text-lg font-bold">{temp.title}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">Template ID: {temp.id}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">{temp.explanation}</p>
+                                            <div className="relative bg-gray-50 dark:bg-zinc-700 rounded-lg p-6 pt-10 h-48 overflow-scroll">
                                                 <pre>
-                                                    <code className="text-sm text-violet-300 whitespace-pre">{temp.code}</code>
+                                                    <code className="text-sm text-violet-500 whitespace-pre dark:text-violet-300">{temp.code}</code>
                                                 </pre>
                                                 <button
                                                     onClick={() => handleCopy(temp.id, temp.code)}
-                                                    className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-1 rounded"
+                                                    className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-1 rounded dark:bg-blue-400 dark:text-white"
                                                 >
                                                     {temp.copied ? "Copied" : "Copy"}
                                                 </button>
                                             </div>
-                                            <p className="text-sm mt-2 text-black">
+                                            <p className="text-sm mt-2 text-black dark:text-white ">
                                                 <strong>Tags:</strong> {temp.tags.map((tag: any) => tag.name).join(", ")}
                                             </p>
                                             <button
                                                 onClick={() => handleModify(temp.id)}
-                                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-400 dark:hover:bg-blue-500"
                                             >
                                                 Modify
                                             </button>
@@ -186,23 +184,19 @@ const SearchTemplates: React.FC = () => {
                                     <button
                                         onClick={handlePreviousPage}
                                         disabled={currentPage === 1}
-                                        className={`px-4 py-2 bg-gray-300 rounded-lg ${
-                                            currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"
-                                        }`}
+                                        className={`px-4 py-2 bg-gray-300 dark:text-black rounded-lg ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-zinc-600"}`}
                                     >
                                         Previous
                                     </button>
                                     <button
                                         onClick={handleNextPage}
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 bg-gray-300 rounded-lg ${
-                                            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"
-                                        }`}
+                                        className={`px-4 py-2 bg-gray-300 dark:text-black rounded-lg ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-zinc-600"}`}
                                     >
                                         Next
                                     </button>
                                 </div>
-                                <p className="text-sm text-gray-500 mt-2 text-center">
+                                <p className="text-sm text-gray-500 mt-2 text-center dark:text-gray-400">
                                     Page {currentPage} of {totalPages}
                                 </p>
                             </div>
@@ -210,7 +204,7 @@ const SearchTemplates: React.FC = () => {
 
                         {/* No results message */}
                         {searchTriggered && templateStates.length === 0 && !error && (
-                            <p className="text-gray-600 text-center mt-6">No results found for your search.</p>
+                            <p className="text-gray-600 text-center mt-6 dark:text-gray-400">No results found for your search.</p>
                         )}
                     </div>
                 </div>

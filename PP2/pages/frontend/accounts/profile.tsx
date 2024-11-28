@@ -143,8 +143,8 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black p-4">
-      <h1 className="text-2xl font-bold mb-4 dark:text-white">Edit Profile</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 p-4">
+      <h1 className="text-2xl font-bold mb-4 text-black dark:text-white">Edit Profile</h1>
 
       {/* display error message if any */}
       {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -152,54 +152,54 @@ const Profile: React.FC = () => {
       {message && <p className="text-green-500 mb-4">{message}</p>}
 
       {/* profile form */}
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-md">
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-md dark:bg-black">
         {/* input field for first name */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">First Name</label>
+          <label className="block text-gray-700 mb-2 dark:text-white">First Name</label>
           <input
             type="text"
             name="firstName"
             value={profile.firstName}
             onChange={handleInputChange}
-            className="w-full border rounded px-3 py-2"
+            className="dark:border-gray-600 dark:bg-zinc-700 dark:text-white text-black w-full border rounded px-3 py-2"
           />
         </div>
         {/* input field for last name */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Last Name</label>
+          <label className="block text-gray-700 mb-2 dark:text-white">Last Name</label>
           <input
             type="text"
             name="lastName"
             value={profile.lastName}
             onChange={handleInputChange}
-            className="w-full border rounded px-3 py-2"
+            className="dark:border-gray-600 dark:bg-zinc-700 dark:text-white text-black w-full border rounded px-3 py-2"
           />
         </div>
         {/* input field for email */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Email</label>
+          <label className="block text-gray-700 mb-2 dark:text-white">Email</label>
           <input
             type="email"
             name="email"
             value={profile.email}
             onChange={handleInputChange}
-            className="w-full border rounded px-3 py-2"
+            className="dark:border-gray-600 dark:bg-zinc-700 dark:text-white text-black w-full border rounded px-3 py-2"
           />
         </div>
         {/* input field for phone number */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Phone Number</label>
+          <label className="block text-gray-700 mb-2 dark:text-white">Phone Number</label>
           <input
             type="text"
             name="phoneNumber"
             value={profile.phoneNumber}
             onChange={handleInputChange}
-            className="w-full border rounded px-3 py-2"
+            className="dark:border-gray-600 dark:bg-zinc-700 dark:text-white text-black w-full border rounded px-3 py-2"
           />
         </div>
         {/* avatar selection */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Select an Avatar</label>
+          <label className="block text-gray-700 dark:text-white mb-2">Select an Avatar</label>
           <div className="flex space-x-4">
             {avatars.map((avatar) => (
               <div
