@@ -4,6 +4,7 @@
 echo "Installing npm dependencies..."
 npm install
 npx prisma generate
+npm install uuid
 
 # Step 2: Run Prisma migrations to set up the database
 echo "Running Prisma migrations..."

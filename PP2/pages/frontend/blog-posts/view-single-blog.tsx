@@ -37,7 +37,7 @@ const ViewBlogPost: React.FC = () => {
     if (token) {
       try {
         const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
-        console.log('Decoded Token:', decodedToken); // Debugging
+
         if (decodedToken.role === 'admin') {
           setIsAdmin(true);
         } else {
@@ -271,8 +271,8 @@ const ViewBlogPost: React.FC = () => {
     }
 
     try {
-      console.log('Unhide Request:', { commentId, blogPostId }); // Debugging
-      const response = await fetch('/api/icr/unhide', {
+
+        const response = await fetch('/api/icr/unhide', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -316,7 +316,7 @@ const ViewBlogPost: React.FC = () => {
               <p className={`font-medium ${comment.isHidden ? 'text-gray-400' : 'text-gray-800'}`}>
                 {comment.isHidden ? 'This comment is hidden.' : comment.content}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-white text-black">
                 Posted by {comment.user?.firstName} {comment.user?.lastName}
               </p>
               <div className="flex items-center space-x-2 mt-2">
@@ -342,7 +342,7 @@ const ViewBlogPost: React.FC = () => {
                     </button>
                     <button
                       onClick={() => setReplyingTo(comment.id)}
-                      className="mt-2 text-sm text-blue-500 underline"
+                      className="mt-2 text-sm text-blue-500 underline dark:text-white text-black"
                     >
                       Reply
                     </button>
@@ -369,7 +369,7 @@ const ViewBlogPost: React.FC = () => {
                 )}
               </div>
               {replyingTo === comment.id && (
-                <div className="mt-4">
+                <div className="mt-4 dark:text-white text-black">
                   <textarea
                     placeholder="Write a reply..."
                     value={reply[comment.id] || ''}
@@ -382,7 +382,7 @@ const ViewBlogPost: React.FC = () => {
                   <div className="flex justify-end mt-2">
                     <button
                       onClick={() => handleAddReply(comment.id)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                      className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600"
                     >
                       Respond
                     </button>
@@ -400,16 +400,16 @@ const ViewBlogPost: React.FC = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl dark:bg-zinc-900">
         {post ? (
           <>
-            <h1 className={`text-3xl font-bold ${post.isHidden ? 'text-gray-400' : ''}`}>
-              {post.isHidden ? 'This post is hidden.' : post.title}
+            <h1 className={`text-3xl font-bold ${post.isHidden ? 'text-black dark:text-white' :  'text-gray-800 dark:text-gray-200'}`}>
+              {post.isHidden ? 'This post is hidden.' : post.title }
             </h1>
-            <p className="text-gray-600 mt-2">{post.description}</p>
-            <div className="text-gray-800 mt-4">{post.content}</div>
-            <div className="mt-4 text-sm text-gray-500">
+            <p className="text-gray-600 mt-2 dark:text-white">{post.description}</p>
+            <div className="text-gray-800 mt-4 dark:text-white">{post.content}</div>
+            <div className="mt-4 text-sm text-gray-500 dark:text-white">
               Posted by {post.user?.firstName} {post.user?.lastName}
             </div>
             <div className="mt-4 flex space-x-4">
@@ -457,7 +457,7 @@ const ViewBlogPost: React.FC = () => {
             </div>
             {post.templates?.length > 0 && (
               <div className="mt-6">
-                <h2 className="text-xl font-semibold">Templates</h2>
+                <h2 className="text-xl font-semibold text-black dark:text-white">Templates</h2>
                 <ul className="list-disc pl-5">
                   {post.templates.map((template: any) => (
                     <li key={template.id}>
@@ -472,12 +472,12 @@ const ViewBlogPost: React.FC = () => {
                 </ul>
               </div>
             )}
-            <h2 className="text-2xl font-bold mt-6">Comments</h2>
+            <h2 className="text-2xl font-bold mt-6 text-black dark:text-white">Comments</h2>
             <textarea
               placeholder="Write a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="w-full p-3 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full p-3 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white text-black"
             />
             <button
               onClick={handleAddComment}
@@ -488,7 +488,7 @@ const ViewBlogPost: React.FC = () => {
             <div className="mt-6 space-y-6">{renderComments(comments)}</div>
           </>
         ) : (
-          <p className="text-gray-500">Blog post not found.</p>
+          <p className="text-gray-500 ">Blog post not found.</p>
         )}
       </div>
     </div>

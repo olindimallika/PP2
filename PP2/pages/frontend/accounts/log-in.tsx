@@ -66,8 +66,8 @@ const LoginPage: React.FC = () => {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-slate-800 py-8">
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-                <h1 className="text-2xl font-bold text-center mb-6">Log In</h1>
+            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md dark:bg-zinc-900">
+                <h1 className="text-2xl font-bold text-center mb-6 text-black dark:text-white">Log In</h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <input
                         type="email"
@@ -76,7 +76,7 @@ const LoginPage: React.FC = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                     />
                     <input
                         type="password"
@@ -85,7 +85,7 @@ const LoginPage: React.FC = () => {
                         value={formData.password}
                         onChange={handleChange}
                         required
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                     />
                     <button
                         type="submit"
@@ -98,7 +98,7 @@ const LoginPage: React.FC = () => {
                     </button>
                     {error && <p className="text-red-500 text-center">{error}</p>}
                 </form>
-                <div className="text-center mt-4">
+                <div className="text-center mt-4 text-black dark:text-white">
                     <p>
                         Don&apos;t have an account?{' '}
                         <span
