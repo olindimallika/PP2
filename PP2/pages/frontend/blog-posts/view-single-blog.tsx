@@ -14,29 +14,37 @@ const ViewBlogPost: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  // Fetch blog post and comments
-  const fetchBlogPostAndComments = async () => {
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalComments, setTotalComments] = useState<number>(0);
+
+  // Fetch blog post and comments with pagination
+  const fetchBlogPostAndComments = async (page: number = 1) => {
     if (!blogId) {
       setError('No blog post ID provided');
       return;
     }
-  
+
     try {
-      console.log('Fetching blog post with ID:', blogId);
-      const response = await fetch(`/api/blog-posts/view-single-blog?id=${blogId}`);
+      console.log('Fetching blog post with ID:', blogId, 'Page:', page);
+      const response = await fetch(`/api/blog-posts/view-single-blog?id=${blogId}&page=${page}&limit=5`);
       const data = await response.json();
-  
+
       if (!response.ok) {
         console.error('API Error:', data);
         throw new Error(data.message || 'Failed to fetch the blog post.');
       }
-  
+
       if (!data.post) {
         throw new Error('Blog post data is missing from the response');
       }
-  
+
       setPost(data.post);
       setComments(data.post.comments || []);
+      setTotalComments(data.totalComments);
+      setTotalPages(data.totalPages);
+      setCurrentPage(data.currentPage);
       setError('');
     } catch (err: any) {
       console.error('Fetch Error:', err);
@@ -44,6 +52,7 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
+  // Check if the user is an admin
   const checkAdminStatus = () => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -63,11 +72,6 @@ const ViewBlogPost: React.FC = () => {
       console.error('No token found.');
       setIsAdmin(false);
     }
-  };
-
-  // Handle template click
-  const handleTemplateClick = (templateId: number) => {
-    router.push(`/frontend/blog-posts/blog-link-template?id=${templateId}`);
   };
 
   // Handle adding a comment
@@ -365,13 +369,13 @@ const ViewBlogPost: React.FC = () => {
                     onChange={(e) =>
                       setReply((prev) => ({ ...prev, [comment.id]: e.target.value }))
                     }
-                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white text-black"
                     rows={2}
                   />
                   <div className="flex justify-end mt-2">
                     <button
                       onClick={() => handleAddReply(comment.id)}
-                      className="bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600"
+                      className="bg-blue-500 text-black px-4 dark:text-white py-2 rounded-lg hover:bg-blue-600"
                     >
                       Respond
                     </button>
@@ -385,14 +389,25 @@ const ViewBlogPost: React.FC = () => {
       ));
   };
 
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    fetchBlogPostAndComments(newPage);
+  };
+
   useEffect(() => {
     if (blogId) {
       console.log('Blog ID from query:', blogId);
-      fetchBlogPostAndComments();
+      fetchBlogPostAndComments(currentPage);
     }
     checkAdminStatus();
-  }, [blogId]);
+  }, [blogId, currentPage]);
 
+  // Handle template click
+const handleTemplateClick = (templateId: number) => {
+    router.push(`/frontend/blog-posts/blog-link-template?id=${templateId}`);
+  };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8">
@@ -486,6 +501,28 @@ const ViewBlogPost: React.FC = () => {
               Add Comment
             </button>
             <div className="mt-6 space-y-6">{renderComments(comments)}</div>
+            
+            {/* Pagination controls */}
+            <div className="flex justify-center mt-6">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg mr-2"
+              >
+                Previous
+              </button>
+              <span className=" text-gray-700 dark:text-white rounded-lg mr-2">
+                Page {currentPage} of {totalPages}
+                
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg ml-2"
+              >
+                Next
+              </button>
+            </div>
           </>
         ) : (
           <p className="text-gray-500">Blog post not found.</p>
