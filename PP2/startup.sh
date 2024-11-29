@@ -22,8 +22,33 @@ EOL
 
 echo ".env file created."
 
+
 # Step 4: Create an admin user by running the seed script
 echo "Now creating admin user:"
 npx prisma db seed
+
+# Adding all the docker images
+#!/bin/bash
+
+# Set the base directory for the Dockerfiles
+BASE_DIR="language-containers"
+
+# List of supported languages, extracted from the frontend options
+LANGUAGES=("javascript" "python" "c" "cpp" "csharp" "java" "go" "php" "rust" "sql" "ruby")
+
+# Loop through each language and build the Docker image
+for lang in "${LANGUAGES[@]}"; do
+    echo "Building Docker image for ${lang}..."
+    docker build -t runtime-${lang} ./${BASE_DIR}/${lang}
+    if [ $? -eq 0 ]; then
+        echo "Successfully built runtime-${lang}"
+    else
+        echo "Failed to build runtime-${lang}"
+        exit 1
+    fi
+done
+
+echo "All Docker images built successfully."
+
 
 echo "Your script startup.sh was successfull!!"
