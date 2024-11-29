@@ -4,31 +4,43 @@ import { useRouter } from 'next/router';
 const ViewBlogPost: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
+  const blogId = Array.isArray(id) ? id[0] : id;
 
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState<string>('');
   const [reply, setReply] = useState<{ [key: number]: string }>({});
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Fetch blog post and comments
   const fetchBlogPostAndComments = async () => {
-    setLoading(true);
+    if (!blogId) {
+      setError('No blog post ID provided');
+      return;
+    }
+  
     try {
-      const response = await fetch(`/api/blog-posts/view-single-blog?id=${id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch the blog post.');
-      }
+      console.log('Fetching blog post with ID:', blogId);
+      const response = await fetch(`/api/blog-posts/view-single-blog?id=${blogId}`);
       const data = await response.json();
+  
+      if (!response.ok) {
+        console.error('API Error:', data);
+        throw new Error(data.message || 'Failed to fetch the blog post.');
+      }
+  
+      if (!data.post) {
+        throw new Error('Blog post data is missing from the response');
+      }
+  
       setPost(data.post);
       setComments(data.post.comments || []);
+      setError('');
     } catch (err: any) {
+      console.error('Fetch Error:', err);
       setError(err.message || 'An error occurred while fetching the blog post.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -37,7 +49,6 @@ const ViewBlogPost: React.FC = () => {
     if (token) {
       try {
         const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
-
         if (decodedToken.role === 'admin') {
           setIsAdmin(true);
         } else {
@@ -54,19 +65,12 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      fetchBlogPostAndComments();
-    }
-    checkAdminStatus();
-  }, [id]);
-
-  // Navigate to template details page
+  // Handle template click
   const handleTemplateClick = (templateId: number) => {
     router.push(`/frontend/blog-posts/blog-link-template?id=${templateId}`);
   };
 
-  // Add a new comment
+  // Handle adding a comment
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -85,7 +89,7 @@ const ViewBlogPost: React.FC = () => {
         },
         body: JSON.stringify({
           content: newComment,
-          blogPostId: Number(id),
+          blogPostId: Number(blogId),
         }),
       });
 
@@ -102,45 +106,7 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
-  // Add a reply to a comment
-  const handleAddReply = async (parentId: number) => {
-    if (!reply[parentId]?.trim()) return;
-
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setError('You must be logged in to post a reply.');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/blog-posts/create-comment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          content: reply[parentId],
-          blogPostId: Number(id),
-          parentId,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add reply.');
-      }
-
-      const newReplyData = await response.json();
-      setComments((prevComments) => [newReplyData.comment, ...prevComments]);
-      setReplyingTo(null);
-      setReply((prev) => ({ ...prev, [parentId]: '' }));
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while adding the reply.');
-    }
-  };
-
-  // Handle ratings (upvote/downvote)
+  // Handle ratings
   const handleRating = async (isUpvote: boolean, blogPostId?: number, commentId?: number) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -192,13 +158,7 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      fetchBlogPostAndComments();
-    }
-  }, [id]);
-
-  // Handle reports for comments or blog posts
+  // Handle reports
   const handleReports = async (commentId?: number, blogPostId?: number) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -230,7 +190,7 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
-  // Handle hiding comments or blog posts (admin only)
+  // Handle hiding content
   const handleHiding = async (commentId?: number, blogPostId?: number) => {
     const token = localStorage.getItem('accessToken');
     if (!token || !isAdmin) {
@@ -257,22 +217,15 @@ const ViewBlogPost: React.FC = () => {
     }
   };
 
-  // Handle unhiding comments or blog posts (admin only)
+  // Handle unhiding content
   const handleUnhiding = async (commentId?: number, blogPostId?: number) => {
     const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setError('You must be logged in to unhide content.');
-      return;
-    }
-
-    if (!isAdmin) {
+    if (!token || !isAdmin) {
       setError('You must be an admin to unhide content.');
       return;
     }
-
     try {
-
-        const response = await fetch('/api/icr/unhide', {
+      const response = await fetch('/api/icr/unhide', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -280,20 +233,56 @@ const ViewBlogPost: React.FC = () => {
         },
         body: JSON.stringify({ commentId, blogPostId }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to unhide content.');
       }
-
       alert('Content unhidden successfully!');
       fetchBlogPostAndComments();
     } catch (err: any) {
-      console.error('Unhide Error:', err.message);
       setError(err.message || 'An error occurred while unhiding the content.');
     }
   };
 
+  // Handle adding a reply
+  const handleAddReply = async (parentId: number) => {
+    if (!reply[parentId]?.trim()) return;
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setError('You must be logged in to post a reply.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/blog-posts/create-comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: reply[parentId],
+          blogPostId: Number(blogId),
+          parentId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add reply.');
+      }
+
+      const newReplyData = await response.json();
+      setComments((prevComments) => [newReplyData.comment, ...prevComments]);
+      setReplyingTo(null);
+      setReply((prev) => ({ ...prev, [parentId]: '' }));
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while adding the reply.');
+    }
+  };
+
+  // Render comments
   const renderComments = (commentList: any[], parentId: number | null = null) => {
     return commentList
       .filter((comment) => comment.parentId === parentId)
@@ -396,12 +385,23 @@ const ViewBlogPost: React.FC = () => {
       ));
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  useEffect(() => {
+    if (blogId) {
+      console.log('Blog ID from query:', blogId);
+      fetchBlogPostAndComments();
+    }
+    checkAdminStatus();
+  }, [blogId]);
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl dark:bg-zinc-900">
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         {post ? (
           <>
             <h1 className={`text-3xl font-bold ${post.isHidden ? 'text-black dark:text-white' :  'text-gray-800 dark:text-gray-200'}`}>
@@ -416,19 +416,19 @@ const ViewBlogPost: React.FC = () => {
               {!post.isHidden && (
                 <>
                   <button
-                    onClick={() => handleRating(true, Number(id))}
+                    onClick={() => handleRating(true, Number(blogId))}
                     className="text-blue-500 hover:text-blue-600"
                   >
                     ▲ {post.upvoteCount}
                   </button>
                   <button
-                    onClick={() => handleRating(false, Number(id))}
+                    onClick={() => handleRating(false, Number(blogId))}
                     className="text-red-500 hover:text-red-600"
                   >
                     ▼ {post.downvoteCount}
                   </button>
                   <button
-                    onClick={() => handleReports(undefined, Number(id))}
+                    onClick={() => handleReports(undefined, Number(blogId))}
                     className="text-red-500 hover:text-red-600"
                   >
                     Report Post
@@ -439,14 +439,14 @@ const ViewBlogPost: React.FC = () => {
                 <>
                   {post.isHidden ? (
                     <button
-                      onClick={() => handleUnhiding(undefined, Number(id))}
+                      onClick={() => handleUnhiding(undefined, Number(blogId))}
                       className="text-green-500 hover:text-green-600"
                     >
                       Unhide Post
                     </button>
                   ) : (
                     <button
-                      onClick={() => handleHiding(undefined, Number(id))}
+                      onClick={() => handleHiding(undefined, Number(blogId))}
                       className="text-gray-500 hover:text-black"
                     >
                       Hide Post
@@ -488,7 +488,7 @@ const ViewBlogPost: React.FC = () => {
             <div className="mt-6 space-y-6">{renderComments(comments)}</div>
           </>
         ) : (
-          <p className="text-gray-500 ">Blog post not found.</p>
+          <p className="text-gray-500">Blog post not found.</p>
         )}
       </div>
     </div>
@@ -496,260 +496,3 @@ const ViewBlogPost: React.FC = () => {
 };
 
 export default ViewBlogPost;
-
-
-
-
-// import React, { useEffect, useState } from 'react';
-// import { useRouter } from 'next/router';
-
-// const ViewBlogPost: React.FC = () => {
-//   const router = useRouter();
-//   const { id } = router.query;
-
-//   const [post, setPost] = useState<any>(null);
-//   const [comments, setComments] = useState<any[]>([]);
-//   const [newComment, setNewComment] = useState<string>('');
-//   const [reply, setReply] = useState<{ [key: number]: string }>({});
-//   const [replyingTo, setReplyingTo] = useState<number | null>(null);
-//   const [loading, setLoading] = useState<boolean>(true);
-//   const [error, setError] = useState<string>('');
-//   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
-//   // Fetch blog post and comments
-//   const fetchBlogPostAndComments = async () => {
-//     setLoading(true);
-//     try {
-//       const response = await fetch(`/api/blog-posts/view-single-blog?id=${id}`);
-//       if (!response.ok) {
-//         throw new Error('Failed to fetch the blog post.');
-//       }
-//       const data = await response.json();
-//       setPost(data.post);
-//       setComments(data.post.comments || []);
-//     } catch (err: any) {
-//       setError(err.message || 'An error occurred while fetching the blog post.');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const checkAdminStatus = () => {
-//     const token = localStorage.getItem('accessToken');
-//     if (token) {
-//       try {
-//         const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
-//         if (decodedToken.role === 'admin') {
-//           setIsAdmin(true);
-//         } else {
-//           setIsAdmin(false);
-//         }
-//       } catch {
-//         setIsAdmin(false);
-//       }
-//     } else {
-//       setIsAdmin(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     if (id) {
-//       fetchBlogPostAndComments();
-//     }
-//     checkAdminStatus();
-//   }, [id]);
-
-//   // Scroll to the specified comment if a hash exists in the URL
-//   useEffect(() => {
-//     if (router.asPath.includes('#comment-')) {
-//       const hash = router.asPath.split('#comment-')[1];
-//       const commentElement = document.getElementById(`comment-${hash}`);
-//       if (commentElement) {
-//         commentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-//       }
-//     }
-//   }, [comments]);
-
-//   const handleTemplateClick = (templateId: number) => {
-//     router.push(`/frontend/blog-posts/blog-link-template?id=${templateId}`);
-//   };
-
-//   const handleAddComment = async () => {
-//     if (!newComment.trim()) return;
-
-//     const token = localStorage.getItem('accessToken');
-//     if (!token) {
-//       setError('You must be logged in to post a comment.');
-//       return;
-//     }
-
-//     try {
-//       const response = await fetch('/api/blog-posts/create-comment', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           Authorization: `Bearer ${token}`,
-//         },
-//         body: JSON.stringify({
-//           content: newComment,
-//           blogPostId: Number(id),
-//         }),
-//       });
-
-//       if (!response.ok) {
-//         const errorData = await response.json();
-//         throw new Error(errorData.error || 'Failed to add comment.');
-//       }
-
-//       const newCommentData = await response.json();
-//       setComments((prevComments) => [newCommentData.comment, ...prevComments]);
-//       setNewComment('');
-//     } catch (err: any) {
-//       setError(err.message || 'An error occurred while adding the comment.');
-//     }
-//   };
-
-//   const handleAddReply = async (parentId: number) => {
-//     if (!reply[parentId]?.trim()) return;
-
-//     const token = localStorage.getItem('accessToken');
-//     if (!token) {
-//       setError('You must be logged in to post a reply.');
-//       return;
-//     }
-
-//     try {
-//       const response = await fetch('/api/blog-posts/create-comment', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           Authorization: `Bearer ${token}`,
-//         },
-//         body: JSON.stringify({
-//           content: reply[parentId],
-//           blogPostId: Number(id),
-//           parentId,
-//         }),
-//       });
-
-//       if (!response.ok) {
-//         const errorData = await response.json();
-//         throw new Error(errorData.error || 'Failed to add reply.');
-//       }
-
-//       const newReplyData = await response.json();
-//       setComments((prevComments) => [newReplyData.comment, ...prevComments]);
-//       setReplyingTo(null);
-//       setReply((prev) => ({ ...prev, [parentId]: '' }));
-//     } catch (err: any) {
-//       setError(err.message || 'An error occurred while adding the reply.');
-//     }
-//   };
-
-//   const renderComments = (commentList: any[], parentId: number | null = null) => {
-//     return commentList
-//       .filter((comment) => comment.parentId === parentId)
-//       .map((comment) => (
-//         <div
-//           id={`comment-${comment.id}`} // Added ID for scrolling to a specific comment
-//           key={comment.id}
-//           className={`p-4 ${
-//             parentId ? 'ml-6 border-l-2 border-gray-200' : 'ml-4 border rounded-lg'
-//           }`}
-//         >
-//           <div className="flex items-start space-x-4">
-//             <div className="flex-shrink-0">
-//               <img
-//                 src={comment.user?.avatar || '/default-avatar.png'}
-//                 alt={`${comment.user?.firstName || 'User'}'s avatar`}
-//                 className="w-10 h-10 rounded-full"
-//               />
-//             </div>
-//             <div className="w-full">
-//               <p className={`font-medium ${comment.isHidden ? 'text-gray-400' : 'text-gray-800'}`}>
-//                 {comment.isHidden ? 'This comment is hidden.' : comment.content}
-//               </p>
-//               <p className="text-sm text-gray-500">
-//                 Posted by {comment.user?.firstName} {comment.user?.lastName}
-//               </p>
-//               <div className="flex items-center space-x-2 mt-2">
-//                 {!comment.isHidden && (
-//                   <>
-//                     <button
-//                       onClick={() => setReplyingTo(comment.id)}
-//                       className="mt-2 text-sm text-blue-500 underline"
-//                     >
-//                       Reply
-//                     </button>
-//                   </>
-//                 )}
-//                 {isAdmin && (
-//                   <>
-//                     {comment.isHidden ? (
-//                       <button
-//                         onClick={() => {}}
-//                         className="text-green-500 hover:text-green-600"
-//                       >
-//                         Unhide
-//                       </button>
-//                     ) : (
-//                       <button
-//                         onClick={() => {}}
-//                         className="text-gray-500 hover:text-black"
-//                       >
-//                         Hide
-//                       </button>
-//                     )}
-//                   </>
-//                 )}
-//               </div>
-//               {replyingTo === comment.id && (
-//                 <div className="mt-4">
-//                   <textarea
-//                     placeholder="Write a reply..."
-//                     value={reply[comment.id] || ''}
-//                     onChange={(e) =>
-//                       setReply((prev) => ({ ...prev, [comment.id]: e.target.value }))
-//                     }
-//                     className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-//                     rows={2}
-//                   />
-//                   <div className="flex justify-end mt-2">
-//                     <button
-//                       onClick={() => handleAddReply(comment.id)}
-//                       className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-//                     >
-//                       Respond
-//                     </button>
-//                   </div>
-//                 </div>
-//               )}
-//               <div className="mt-4">{renderComments(commentList, comment.id)}</div>
-//             </div>
-//           </div>
-//         </div>
-//       ));
-//   };
-
-//   if (loading) return <p>Loading...</p>;
-//   if (error) return <p className="text-red-500">{error}</p>;
-
-//   return (
-//     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
-//       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl">
-//         {post ? (
-//           <>
-//             <h1 className="text-3xl font-bold">{post.title}</h1>
-//             <h2 className="text-2xl font-bold mt-6">Comments</h2>
-//             <div className="mt-6 space-y-6">{renderComments(comments)}</div>
-//           </>
-//         ) : (
-//           <p>Blog post not found.</p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ViewBlogPost;
-

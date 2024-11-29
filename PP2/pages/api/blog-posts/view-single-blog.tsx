@@ -45,3 +45,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).json({ error: 'Error fetching blog post.' });
     }
 }
+
