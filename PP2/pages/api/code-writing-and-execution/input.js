@@ -1,109 +1,299 @@
-// import { exec } from 'child_process';
-// import fs from 'fs';
-// import path from 'path';
+import fs from 'fs';
+import path from 'path';
+import { exec } from 'child_process';
+import { v4 as uuidv4 } from 'uuid';
 
-// export default async function handler(req, res) {
-//     if (req.method === 'POST') {
-//         const { code, language, input } = req.body;
+const languageConfigs = {
+    c: { 
+        extension: ".c", 
+        dockerImage: "runtime-c",
+        processCode: (code) => {
+            const headers = new Set(['<stdio.h>']);
+            if (code.includes('strcspn') || code.includes('strlen') || 
+                code.includes('strcmp') || code.includes('strcpy')) {
+                headers.add('<string.h>');
+            }
+            if (code.includes('malloc') || code.includes('free') || 
+                code.includes('calloc') || code.includes('realloc')) {
+                headers.add('<stdlib.h>');
+            }
+            const headerIncludes = Array.from(headers)
+                .map(header => `#include ${header}`)
+                .join('\n');
+            const codeWithoutIncludes = code.replace(/#include\s+<[^>]+>/g, '').trim();
+            return `${headerIncludes}\n\n${codeWithoutIncludes}`;
+        },
+        getCommand: (codeFileName) => 
+            `cd /app && gcc ${codeFileName} -o code.out && ./code.out`
+    }, 
+    cpp: { 
+        extension: ".cpp", 
+        dockerImage: "runtime-cpp",
+        processCode: (code) => {
+            const headers = new Set(['<iostream>', '<string>']);
+            if (code.includes('vector')) headers.add('<vector>');
+            if (code.includes('map')) headers.add('<map>');
+            
+            const headerIncludes = Array.from(headers)
+                .map(header => `#include ${header}`)
+                .join('\n');
+            
+            let processedCode = headerIncludes + '\nusing namespace std;\n\n';
+            processedCode += code.replace(/#include\s+<[^>]+>/g, '').trim();
+            
+            return processedCode;
+        }
+    },
+    java: {
+        extension: ".java",
+        dockerImage: "runtime-java",
+        processCode: (code, uniqueId) => {
+            const className = `Main${uniqueId}`;
+            let processedCode = code;
+            
+            if (code.includes('Scanner') && !code.includes('import java.util.Scanner')) {
+                processedCode = 'import java.util.Scanner;\n' + processedCode;
+            }
 
-//         const languageConfig = {
-//             c: { extension: '.c', compile: 'gcc', execute: './a.out' },
-//             cpp: { extension: '.cpp', compile: 'g++', execute: './a.out' },
-//             java: { extension: '.java', compile: 'javac', execute: 'java Main' },
-//             python: { extension: '.py', execute: 'python3' },
-//             javascript: { extension: '.js', execute: 'node' },
-//             ruby: { extension: '.rb', execute: 'ruby' },
-//             rust: { extension: '.rs', compile: 'rustc', execute: './Main' },
-//             go: { extension: '.go', execute: 'go run' },
-//             swift: { extension: '.swift', execute: 'swift' },
-//             php: { extension: '.php', execute: 'php' },
-//         };
+            if (code.includes('class')) {
+                processedCode = processedCode.replace(/public\s+class\s+\w+/, `public class ${className}`);
+            } else {
+                processedCode = `public class ${className} {
+                    public static void main(String[] args) {
+                        ${code}
+                    }
+                }`;
+            }
+            return { processedCode, className };
+        }
+    },
+    python: {
+        extension: ".py",
+        dockerImage: "runtime-python",
+        processCode: (code) => code
+    },
+    javascript: {
+        extension: ".js",
+        dockerImage: "runtime-javascript",
+        processCode: (code) => {
+            code = code
+                .replace(/prompt\((.*?)\)/g, 'await input($1)')
+                .replace(/alert\((.*?)\)/g, 'console.log($1)');
 
-//         if (!code || !language || !languageConfig[language]) {
-//             return res.status(400).json({ error: 'Invalid input. Check code, language, or input parameters.' });
-//         }
+            return `
+            const readline = require('readline').createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
 
-//         const { extension, compile, execute } = languageConfig[language];
-//         const fileName = `Main${extension}`;
-//         const filePath = path.join('/tmp', fileName);
+            const input = (question) => new Promise((resolve) => {
+                readline.question(question, (answer) => {
+                resolve(answer);
+            });
+            });
 
-//         try {
-//             await fs.promises.writeFile(filePath, code);
+            (async () => {
+                try {
+                    ${code}
+                } finally {
+                    readline.close();
+                }
+            })();
+            `;
+        }
+    },
+    php: {
+        extension: ".php",
+        dockerImage: "runtime-php",
+        getCommand: (codeFileName, inputs) => 
+            `cd /app && printf '${inputs.replace(/'/g, "'\\''")}\n' | php ${codeFileName}`,
+        processCode: (code) => {
+            code = code.replace('?>', '');
+            
+            if (!code.includes('<?php')) {
+                return `<?php\n${code}`;
+            }
+            return code;
+        }
+    },
+    csharp: {
+        extension: ".cs",
+        dockerImage: "runtime-csharp",
+        processCode: (code) => {
+            if (!code.includes("class Program")) {
+                return `using System;
+                    public class Program 
+                    {
+                        public static void Main() 
+                        {
+                            ${code}
+                        }
+                    }`;
+            }
+            return code;
+        },
+        getCommand: (codeFileName) => 
+            `rm -rf /app/* && mkdir -p /app && cd /app && dotnet new console --force --no-restore && cp /tmp/${codeFileName} Program.cs && dotnet build -c Release && dotnet run`
+    },
+    ruby: {
+        extension: ".rb",
+        dockerImage: "runtime-ruby",
+        processCode: (code) => {
+            return `begin\n${code}\nrescue => e\nputs "Error: #{e.message}"\nend`;
+        },
+        getCommand: (codeFileName) => 
+            `cd /tmp && ruby ${codeFileName}`
+    },
+    go: {
+        extension: ".go",
+        dockerImage: "runtime-go",
+        processCode: (code) => {
+            let processedCode = code;
+            if (!code.includes("package main")) {
+                processedCode = "package main\n\n";
+                if (!code.includes("import")) {
+                    processedCode += 'import "fmt"\n\n';
+                }
+                if (!code.includes("func main()")) {
+                    processedCode += `func main() {\n${code}\n}`;
+                } else {
+                    processedCode += code;
+                }
+            }
+            return processedCode;
+        }
+    },
+    sql: {
+        extension: ".sql",
+        dockerImage: "runtime-sql",
+        processCode: (code) => {
+            const formattedCode = [
+                '.mode column',
+                '.headers on',
+                '.nullvalue NULL',
+                '.width 15',
+                '.timer off',
+                'PRAGMA foreign_keys=ON;',
+                code
+            ].join('\n');
+            
+            return formattedCode;
+        },
+        getCommand: (codeFileName) => {
+            return `cd /tmp && sqlite3 :memory: ".read ${codeFileName}"`;
+        }
+    },
+    rust: {
+        extension: ".rs",
+        dockerImage: "runtime-rust",
+        processCode: (code) => {
+            if (!code.includes("fn main()")) {
+                return `
+                use std::io::{self, BufRead};
 
-//             if (compile) {
-//                 await new Promise((resolve, reject) => {
-//                     exec(`${compile} ${filePath}`, (err, stdout, stderr) => {
-//                         if (err) reject({ type: 'Compilation Error', details: stderr });
-//                         else resolve();
-//                     });
-//                 });
-//             }
+                fn main() {
+                    ${code}
+                }`;
+            }
+            return code;
+        }
+    }
+};
 
-//             const child = exec(`${execute} ${filePath}`, (err, stdout, stderr) => {
-//                 if (err) {
-//                     return res.status(500).json({
-//                         error: `Runtime Error: ${stderr}`,
-//                         context: 'An error occurred while executing your program. This may be due to incorrect logic, invalid input, or system-level exceptions.',
-//                     });
-//                 }
-//                 res.status(200).json({ output: stdout.trim(), error: stderr.trim() });
-//             });
+async function runDockerContainer(config, codeFilePath, inputs = '') {
+    const tempDir = path.resolve('/tmp');
+    const codeFileName = path.basename(codeFilePath);
+    
+    if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+    }
 
-//             if (input) {
-//                 child.stdin.write(input.toString());
-//             }
-//             child.stdin.end();
+    const volumeMount = `${tempDir}:/tmp`;
+    let command;
+    switch(config.extension) {
+        case '.sql':
+            command = `cd /tmp && cat ${codeFileName} | sqlite3`;
+            break;
+        case '.cs':
+            command = `cd /tmp && \
+                        mkdir -p app && cd app && \
+                        dotnet new console --force --no-restore > /dev/null 2>&1 && \
+                        cp /tmp/${codeFileName} Program.cs && \
+                        dotnet build -c Release > /dev/null 2>&1 && \
+                        timeout 10s dotnet run -c Release`;
+            if (inputs) {
+                command = `cd /tmp && \
+                        mkdir -p app && cd app && \
+                        dotnet new console --force --no-restore > /dev/null 2>&1 && \
+                        cp /tmp/${codeFileName} Program.cs && \
+                        dotnet build -c Release > /dev/null 2>&1 && \
+                        (printf '%s\\n' "${inputs.replace(/"/g, '\\"')}" | timeout 10s dotnet run -c Release)`;
+            }
+            break;
+        case '.go':
+            command = `cd /tmp && go run ${codeFileName}`;
+            break;
+        case '.rb':
+            command = inputs ? 
+                `cd /tmp && printf '%s\\n' "${inputs.replace(/"/g, '\\"')}" | ruby ${codeFileName}` :
+                `cd /tmp && ruby ${codeFileName}`;
+            break;
+        case '.rs':
+            command = `cd /tmp && rustc ${codeFileName} -o program && ./program`;
+            break;
+        case '.cpp':
+            command = `cd /tmp && g++ ${codeFileName} -o code.out && ./code.out`;
+            break;
+        case '.c':
+            command = `cd /tmp && gcc ${codeFileName} -o code.out && ./code.out`;
+            break;
+        case '.py':
+            command = `cd /tmp && python3 ${codeFileName}`;
+            break;
+        case '.js':
+            command = inputs ? 
+                `cd /tmp && (echo "${inputs.replace(/"/g, '\\"')}" | node ${codeFileName})` :
+                `cd /tmp && node ${codeFileName}`;
+            break;
+        case '.php':
+            command = `cd /tmp && printf '${inputs.replace(/'/g, "'\\''")}\n' |
 
-//             child.on('exit', async () => {
-//                 await fs.promises.unlink(filePath).catch(console.error);
-//             });
+ php ${codeFileName}`;
+            break;
+        default:
+            command = 'echo "Unsupported language"';
+    }
 
-//         } catch (error) {
-//             const errorType = error.type || 'System Error';
-//             res.status(500).json({
-//                 error: `${errorType}: ${error.details || error.message}`,
-//                 context: 'An unexpected error occurred while processing your request.',
-//             });
-//         }
-//     } else {
-//         res.status(405).json({ error: 'Method not allowed. Use POST instead.' });
-//     }
-// }
-
-import { exec } from "child_process";
-import fs from "fs";
-import path from "path";
+    return new Promise((resolve, reject) => {
+        exec(command, { env: { ...process.env, DOCKER_HOST: 'unix:///var/run/docker.sock' }, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
+            if (error) {
+                return reject(`Execution error: ${stderr || error.message}`);
+            }
+            resolve(stdout);
+        });
+    });
+}
 
 export default async function handler(req, res) {
-    if (req.method === "POST") {
-        const { code } = req.body;
+    try {
+        const { language, code, inputs } = req.body;
 
-        if (!code) {
-            return res.status(400).json({ error: "C code is required." });
+        if (!languageConfigs[language]) {
+            return res.status(400).json({ message: `Unsupported language: ${language}` });
         }
 
-        const fileName = "Main.c";
-        const filePath = path.join("/tmp", fileName);
+        const config = languageConfigs[language];
+        const uniqueId = uuidv4();
+        const codeFileName = `${uniqueId}${config.extension}`;
+        const filePath = path.resolve('/tmp', codeFileName);
+        const processedCode = config.processCode(code, uniqueId);
 
-        try {
-            // Write the provided C code to a temporary file
-            await fs.promises.writeFile(filePath, code);
+        fs.writeFileSync(filePath, processedCode);
 
-            // Run the C Docker container to compile and execute the code
-            const dockerCommand = `docker run --rm -v ${filePath}:/usr/src/app/Main.c language-c`;
-            exec(dockerCommand, (err, stdout, stderr) => {
-                if (err) {
-                    return res.status(500).json({
-                        error: `Execution Error: ${stderr || "Unknown error"}`,
-                    });
-                }
-
-                res.status(200).json({ output: stdout.trim(), error: stderr.trim() });
-            });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    } else {
-        res.status(405).json({ error: "Method not allowed. Use POST." });
+        const result = await runDockerContainer(config, codeFileName, inputs);
+        res.status(200).json({ output: result.trim() });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 }
