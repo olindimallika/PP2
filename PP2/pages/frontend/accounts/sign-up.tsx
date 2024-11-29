@@ -103,8 +103,8 @@ const SignUpPage: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black py-8">
             {/* Form Card */}
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-                <h1 className="text-2xl font-bold text-center mb-6">Sign Up</h1>
+            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md dark:bg-zinc-800 py-8">
+                <h1 className="text-2xl font-bold text-center mb-6 text-black dark:text-white">Sign Up</h1>
                 {/* Sign-Up Form */}
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* First Name */}
@@ -115,7 +115,7 @@ const SignUpPage: React.FC = () => {
                         value={formData.firstName}
                         onChange={handleChange}
                         required
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                     />
                     {/* Last Name */}
                     <input
@@ -125,7 +125,7 @@ const SignUpPage: React.FC = () => {
                         value={formData.lastName}
                         onChange={handleChange}
                         required
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-40 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                     />
                     {/* Email */}
                     <input
@@ -135,7 +135,7 @@ const SignUpPage: React.FC = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                     />
                     {/* Password */}
                     <input
@@ -145,7 +145,7 @@ const SignUpPage: React.FC = () => {
                         value={formData.password}
                         onChange={handleChange}
                         required
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                     />
                     {/* Phone Number */}
                     <input
@@ -154,11 +154,11 @@ const SignUpPage: React.FC = () => {
                         placeholder="Phone Number"
                         value={formData.phoneNumber}
                         onChange={handleChange}
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                     />
                     {/* Avatar Selection */}
                     <div>
-                        <label className="block font-semibold mb-2">Select an Avatar:</label>
+                        <label className="block font-semibold mb-2 text-black dark:text-white">Select an Avatar:</label>
                         <div className="flex space-x-4">
                             {avatars.map((avatar) => (
                                 <div
@@ -173,7 +173,7 @@ const SignUpPage: React.FC = () => {
                                         alt={avatar.name}
                                         className="w-16 h-16 rounded-full"
                                     />
-                                    <p className="text-sm text-center mt-1">{avatar.name}</p>
+                                    <p className="text-sm text-center mt-1 text-black dark:text-white">{avatar.name}</p>
                                 </div>
                             ))}
                         </div>
