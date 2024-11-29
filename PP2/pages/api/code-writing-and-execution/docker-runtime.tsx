@@ -450,15 +450,22 @@ export class DockerRuntime {
     }
     private cleanOutput(output: string): string {
         return output
-            .replace(/^[\[\(].*?[\]\)]\s*/m, '') // Remove leading brackets, parentheses, and any text inside
-            .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F]/g, '') // Remove control characters
-            .replace(/\r\n/g, '\n')             // Normalize line endings
-            .replace(/^\s*Enter.*[:]\s*/gm, '') // Remove "Enter..." prompts
-            .replace(/^>.*\n/gm, '')           // Remove ">" prompts
-            .replace(/^\(.*\)\s*/gm, '')       // Remove "(something) " prefixes
-            .replace(/\n{2,}/g, '\n')          // Collapse multiple empty lines
-            .trim();
+            .replace(/^[^\w\n]*\.\s*/, '') // Remove leading special characters or a period
+            .replace(/^[^\w]*(\w)/, '$1') // Remove all leading non-alphanumeric characters
+            .replace(/\*\s*/g, '') // Remove standalone asterisks and spaces after them
+            .replace(/^\s*[\uFEFF\x00-\x1F]*[\[\(]?/gm, '') // Remove leading weird characters, control chars, and optional brackets per line
+            .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove all control characters
+            .replace(/\r\n/g, '\n') // Normalize line endings (CRLF -> LF)
+            .replace(/\n{2,}/g, '\n') // Collapse multiple blank lines
+            .trim() // Trim any remaining leading/trailing whitespace
+            .split('\n') // Split into lines
+            .map(line => line.trim()) // Trim each line to remove stray spaces
+            .join('\n'); // Join the lines back with a single newline character
     }
+
+    
+    
+    
     private async streamToString(stream: NodeJS.ReadableStream): Promise<string> {
         return new Promise((resolve, reject) => {
             let output = '';
