@@ -124,9 +124,9 @@ const EditBlogPost: React.FC = () => {
   }, [id]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-center mb-6">Edit Blog Post</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8 dark:bg-zinc-800">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg dark:bg-black">
+        <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">Edit Blog Post</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         {message && <p className="text-green-500 text-center mb-4">{message}</p>}
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -137,7 +137,7 @@ const EditBlogPost: React.FC = () => {
             value={post.title}
             onChange={handleInputChange}
             required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
           />
           <textarea
             name="description"
@@ -145,7 +145,7 @@ const EditBlogPost: React.FC = () => {
             value={post.description}
             onChange={handleInputChange}
             required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
             rows={4}
           />
           <input
@@ -154,7 +154,7 @@ const EditBlogPost: React.FC = () => {
             placeholder="Tags (comma-separated)"
             value={post.tags}
             onChange={handleInputChange}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
           />
           <input
             type="text"
@@ -162,7 +162,7 @@ const EditBlogPost: React.FC = () => {
             placeholder="Template IDs (comma-separated)"
             value={post.templateIds}
             onChange={handleInputChange}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
           />
           <button
             type="submit"

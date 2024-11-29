@@ -81,9 +81,9 @@ const ManagePosts: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl">
-        <h1 className="text-2xl font-bold text-center mb-6">Manage Posts</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8 dark:bg-zinc-800">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl dark:bg-black">
+        <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">Manage Posts</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         {loading ? (
           <p className="text-gray-600 text-center">Loading...</p>
@@ -91,12 +91,14 @@ const ManagePosts: React.FC = () => {
           <ul className="space-y-4">
             {posts.map((post) => (
               <li key={post.id} className="p-4 border rounded-lg shadow-sm">
-                <h3 className="text-lg font-bold">Title: {post.title}</h3>
-                <p className="text-sm text-gray-600">Description: {post.description}</p>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg font-bold dark:text-white">{post.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <strong>Description: </strong> {post.description}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   <strong>Tags:</strong> {post.tags.map((tag: any) => tag.name).join(', ') || 'No tags'}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   <strong>Template IDs:</strong> {post.templates.map((template: any) => template.id).join(', ') || 'No templates'}
                 </p>
                 <div className="mt-4 flex space-x-4">
@@ -117,7 +119,7 @@ const ManagePosts: React.FC = () => {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-600 text-center">No posts found.</p>
+          <p className="text-gray-600 text-center dark:text-white">No posts found.</p>
         )}
       </div>
     </div>

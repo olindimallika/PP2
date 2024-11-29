@@ -18,7 +18,6 @@ const Home: React.FC = () => {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          textAlign: 'center',
           padding: '20px',
           backgroundColor: '#f9fafb',
           minHeight: '100vh',
@@ -26,10 +25,10 @@ const Home: React.FC = () => {
           fontFamily: 'Arial, sans-serif',
         }}
       >
-        <h1 style={{ fontSize: '2.5rem', color: '#2c3e50' }}>
+        <h1 style={{ fontSize: '2.5rem', color: '#2c3e50', textAlign: 'center'}}>
           Welcome to Scriptorium
         </h1>
-        <p style={{ fontSize: '1.2rem', color: '#7f8c8d' }}>
+        <p style={{ fontSize: '1.2rem', color: '#7f8c8d', textAlign: 'center'}}>
           Dive into the world of coding! Use our tools to execute and test your scripts.
         </p>
 

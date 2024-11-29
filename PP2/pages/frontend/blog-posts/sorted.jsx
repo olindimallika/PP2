@@ -86,8 +86,8 @@ const SortedBlogPosts = () => {
                 alt={`${comment.user?.fullName || 'User'}'s avatar`}
                 className="w-10 h-10 rounded-full"
               />
-              <p className="font-semibold">
-                <span className="mt-4 text-sm text-gray-500 dark:text-gray-300">Posted by</span> {comment.user?.fullName}
+              <p className="font-semibold text-gray-500 dark:text-gray-300">
+                <span className="mt-4 text-sm">Posted by</span> {comment.user?.fullName}
               </p>
             </div>
             <p className="text-gray-800 dark:text-gray-100 mt-2">{comment.content}</p>
@@ -138,7 +138,7 @@ const SortedBlogPosts = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 py-8">
       <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 w-full max-w-3xl">
-        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">Sorted Blog Posts</h1>
+        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">Top Blog Posts</h1>
         {blogPosts.length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400">No blog posts found.</p>
         ) : (
@@ -190,18 +190,14 @@ const SortedBlogPosts = () => {
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
-            className={`px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg ${
-              currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-400 dark:hover:bg-gray-600'
-            }`}
+            className={`px-4 py-2 bg-gray-300 dark:text-black rounded-lg ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-zinc-600"}`}
           >
             Previous
           </button>
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className={`px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg ${
-              currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-400 dark:hover:bg-gray-600'
-            }`}
+            className={`px-4 py-2 bg-gray-300 dark:text-black rounded-lg ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-zinc-600"}`}
           >
             Next
           </button>

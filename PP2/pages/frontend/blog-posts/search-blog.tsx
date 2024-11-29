@@ -151,7 +151,7 @@ const SearchBlogs: React.FC = () => {
                                                 <strong>Tags:</strong> {post.tags.map((tag: any) => tag.name).join(", ")}
                                             </p>
                                             <div className="mt-2 text-sm dark:text-white text-black">
-                                                <strong>Templates:</strong>
+                                                <strong>Templates: </strong>
                                                 {post.templates.map((template) => (
                                                     <button
                                                         key={template.id}
