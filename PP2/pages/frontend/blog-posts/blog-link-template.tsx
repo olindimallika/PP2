@@ -89,16 +89,16 @@ const BlogLinkTemplate: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8 text-black">
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl">
-                <h1 className="text-2xl font-bold mb-4">{template.title}</h1>
-                <p className="text-gray-700 mb-6">{template.explanation}</p>
-                <pre className="bg-gray-100 p-4 rounded-lg overflow-auto">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8 text-black dark:bg-zinc-800">
+            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl dark:bg-black">
+                <h1 className="text-2xl font-bold mb-4 dark:text-white">{template.title}</h1>
+                <p className="text-gray-700 mb-6 dark:text-gray-300">{template.explanation}</p>
+                <pre className="bg-gray-100 p-4 rounded-lg overflow-auto dark:bg-zinc-800 dark:text-violet-300 text-violet-800">
                     <code>{template.code}</code>
                 </pre>
 
                 <div className="mt-6">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
                         <strong>Tags:</strong> {template.tags.map((tag: any) => tag.name).join(", ")}
                     </p>
                 </div>
@@ -119,24 +119,25 @@ const BlogLinkTemplate: React.FC = () => {
                 {error && <p className="text-red-500 text-center mb-4">{error}</p>}
                 
                 {loading ? (
-                    <p className="text-gray-600 text-center">Loading...</p>
-                ) : posts.length > 0 ? (
-                    <div className="bg-white rounded-lg p-4 w-full max-w-3xl mt-5">
+                    <p className="text-white text-center">Loading...</p>
+                
+                ) : ( 
+                    <div className="rounded-lg p-4 w-full max-w-3xl mt-5 border border-dotted border-gray-400">
                         <h1 className="text-2xl text-center text-gray-400 mb-6">Related Blog Posts</h1>
                         <ul className="space-y-4">
                             {posts.map((post) => (
                                 <li key={post.id} className="p-8 border rounded-lg shadow-sm">
-                                    <h3 className="text-lg font-bold">{post.title}</h3>
-                                    <p className="text-sm text-gray-600">{post.description}</p>
-                                    <p className="text-sm text-gray-600">
+                                    <h3 className="text-lg font-bold dark:text-white">{post.title}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        <strong>Description: </strong> {post.description}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
                                         <strong>Tags:</strong> {post.tags.map((tag: any) => tag.name).join(', ') || 'No tags'}
                                     </p>
                                 </li>
                             ))}
                         </ul>
                     </div>
-                ) : (
-                    <p className="text-gray-600 text-center">This template is not mentioned in any blog posts.</p>
                 )}
             </div>
         </div>
