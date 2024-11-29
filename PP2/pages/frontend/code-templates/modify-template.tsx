@@ -10,6 +10,7 @@ import { go } from "@codemirror/lang-go";
 import { php } from "@codemirror/lang-php";
 import { rust } from "@codemirror/lang-rust";
 import { sql } from '@codemirror/lang-sql';
+import { EditorView } from "@codemirror/view";
 
 const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
     const [modifiedCode, setModifiedCode] = useState<string>('');
@@ -33,7 +34,6 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [output, setOutput] = useState<string>('');
     const [codeError, setCodeError] = useState<{ type: string; message: string } | null>(null);
-    const [logs, setLogs] = useState<string | null>(null);
 
     const theme = darkMode ? "dark" : "light";
 
@@ -48,6 +48,7 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
         php: php(),
         rust: rust(),
         sql: sql(),
+        ruby: python(),
     };
 
     // only need initially, to get original template to modify or run
@@ -88,7 +89,6 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
         setIsLoading(true);
         setCodeError(null);
         setOutput('');
-        setLogs(null);
 
         try {
             const response = await fetch(`/api/code-templates/run-modify`, {
@@ -125,7 +125,6 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
         setIsLoading(true);
         setCodeError(null);
         setOutput('');
-        setLogs(null);
 
         const code = template.code;
 
@@ -165,7 +164,6 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
         setIsLoading(true);
         setCodeError(null);
         setOutput('');
-        setLogs(null);
 
         // check that user is logged in 
         const token = localStorage.getItem('accessToken');
@@ -221,16 +219,6 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
 
     };
 
-    const fetchLogs = async () => {
-        try {
-            const response = await fetch('/api/logs');
-            const result = await response.text();
-            setLogs(result || 'No logs available.');
-        } catch {
-            setLogs('Failed to fetch logs.');
-        }
-    };
-
     useEffect(() => {
         if (id) {
             fetchTemplate();
@@ -239,8 +227,8 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
     
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-slate-800 py-8">
-            <div className="bg-white shadow-lg rounded-lg p-12 w-full max-w-3xl">
-                <h1 className="text-2xl font-bold text-center mb-6 text-black">Run/Modify Code Templates</h1>
+            <div className="bg-white shadow-lg rounded-lg p-12 w-full max-w-3xl dark:bg-black">
+                <h1 className="text-2xl font-bold text-center mb-6 text-black dark:text-white">Run/Modify Code Templates</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Template Code */}
@@ -248,7 +236,7 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
                         <div className="flex-1">
                             
                             <div className="grid grid-cols-5 gap-3">
-                                <label htmlFor="language" className="text-black py-2 px-8">Language:</label>
+                                <label htmlFor="language" className="text-black py-2 px-8 dark:text-white">Language:</label>
                                 <select className="bg-blue-700 text-white w-full p-2 rounded-md text-base" id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
                                     <option value="javascript">JavaScript</option>
                                     <option value="python">Python</option>
@@ -260,6 +248,7 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
                                     <option value="php">PHP</option>
                                     <option value="rust">Rust</option>
                                     <option value="sql">SQL</option>
+                                    <option value="ruby">Ruby</option>
                                 </select>
                                 <button 
                                     type="submit"
@@ -272,21 +261,19 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
                                     onClick={handleRun}>
                                     {isLoading ? 'Running...' : 'Run'}
                                 </button> 
-                                <button 
-                                    className="text-white block px-8 rounded-lg bg-blue-700 hover:bg-blue-800"
-                                    type="button" 
-                                    onClick={fetchLogs}>
-                                    Show Logs
-                                </button>
                             </div>
 
-                            <label className="block mb-2 text-stone-800 text-base font-bold" htmlFor="code">Code:</label>
+                            <label className="block mb-2 text-stone-800 text-base font-bold dark:text-white" htmlFor="code">Code:</label>
                             {/* CodeMirror Editor, specific CodeMirror syntax from youtube video "Javascript CodeMirror Syntax Highlighter Example to Highlight Source Code in Browser Full Example" by freemediatools and chatgpt*/}
                             <CodeMirror
+                                className="text-black dark:text-white"
                                 value={template.code}
                                 height="200px"
                                 theme={theme}
-                                extensions={[languageExtensions[language]]}
+                                extensions={[
+                                    languageExtensions[language],
+                                    EditorView.lineWrapping, 
+                                ]}
                                 onChange={(value) => {
                                     setTemplate({ ...template, code: value });
                                     setModifiedCode(value)
@@ -315,24 +302,18 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
                                 </pre>
                             </div>
                         )}
-                        {logs && (
-                            <div className="overflow-y-auto text-red-600 bg-black rounded-lg p-4">
-                                <h3 className="text-white">Logs:</h3>
-                                <pre>{logs}</pre>
-                            </div>
-                        )}
                     </div>
                 </form>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
                 {resultTemplate && (
-                    <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg mt-8 text-black">
+                    <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg mt-8 text-black dark:bg-black">
 
-                        <h3 className="text-black text-lg font-bold">{resultTemplate.title}</h3>
-                        <p className="text-sm text-gray-600">Template ID: {resultTemplate.id}</p>
-                        <p className="text-sm text-gray-600">{resultTemplate.explanation}</p>
-                        <p className="text-sm text-gray-600">
+                        <h3 className="text-black text-lg font-bold dark:text-white">{resultTemplate.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Template ID: {resultTemplate.id}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{resultTemplate.explanation}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
 
                             {/* Code Block Container */}
                             <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
@@ -347,7 +328,7 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
                                 </div>   
                             </div>                                               
                         </p>
-                        <p className="text-sm mt-2 text-black">
+                        <p className="text-sm mt-2 text-black dark:text-gray-400">
                             <strong>Tags:</strong>{' '}
                                 {resultTemplate.tags.map((tag: any) => tag.name).join(', ')}
                         </p>
@@ -361,11 +342,11 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
                     </div>
                 )}
                 {forkedTemplate && (
-                    <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg mt-8 text-black">
-                        <h3 className="text-black text-lg font-bold">{forkedTemplate.title}</h3>
-                        <p className="text-sm text-gray-600">Template ID: {forkedTemplate.id}</p>
-                        <p className="text-sm text-gray-600">{forkedTemplate.explanation}</p>
-                        <p className="text-sm text-gray-600">
+                    <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg mt-8 text-black dark:bg-black">
+                        <h3 className="text-black text-lg font-bold dark:text-white">{forkedTemplate.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Template ID: {forkedTemplate.id}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{forkedTemplate.explanation}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
 
                             {/* Code Block Container */}
                             <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
@@ -380,7 +361,7 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
                                 </div>   
                             </div>                                               
                         </p>
-                        <p className="text-sm mt-2 text-black">
+                        <p className="text-sm mt-2 text-black dark:text-gray-400">
                             <strong>Tags:</strong>{' '}
                                 {forkedTemplate.tags.map((tag: any) => tag.name).join(', ')}
                         </p>

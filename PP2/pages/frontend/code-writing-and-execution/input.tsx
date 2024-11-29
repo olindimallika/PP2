@@ -9,6 +9,7 @@ import { go } from "@codemirror/lang-go";
 import { php } from "@codemirror/lang-php";
 import { rust } from "@codemirror/lang-rust";
 import { sql } from '@codemirror/lang-sql';
+import { EditorView } from "@codemirror/view";
 
 const Input: React.FC<{ darkMode: boolean }> = ( { darkMode } ) => {
     const [code, setCode] = useState<string>('');
@@ -100,10 +101,14 @@ const Input: React.FC<{ darkMode: boolean }> = ( { darkMode } ) => {
                             <label className="block mb-2 text-stone-800 text-base font-bold" htmlFor="code">Code:</label>
                             {/* CodeMirror Editor, specific CodeMirror syntax from youtube video "Javascript CodeMirror Syntax Highlighter Example to Highlight Source Code in Browser Full Example" by freemediatools and chatgpt*/}
                             <CodeMirror
+                                className="text-black dark:text-white"
                                 value={code}
                                 height="200px"
                                 theme={theme}
-                                extensions={[languageExtensions[language]]}
+                                extensions={[
+                                    languageExtensions[language],
+                                    EditorView.lineWrapping, 
+                                ]}
                                 onChange={(value) => setCode(value)}
                                 style={{
                                     border: "1px solid #ddd",

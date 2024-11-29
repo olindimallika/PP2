@@ -302,7 +302,7 @@ const ViewBlogPost: React.FC = () => {
               />
             </div>
             <div className="w-full">
-              <p className={`font-medium ${comment.isHidden ? 'text-gray-400' : 'text-gray-800'}`}>
+              <p className={`font-medium ${comment.isHidden ? 'text-gray-400' : 'text-gray-800 dark:text-white'}`}>
                 {comment.isHidden ? 'This comment is hidden.' : comment.content}
               </p>
               <p className="text-sm text-gray-500 dark:text-white text-black">
@@ -404,7 +404,7 @@ const ViewBlogPost: React.FC = () => {
         )}
         {post ? (
           <>
-            <h1 className={`text-3xl font-bold ${post.isHidden ? 'text-black dark:text-white' :  'text-gray-800 dark:text-gray-200'}`}>
+            <h1 className={`text-3xl font-bold ${post.isHidden ? 'text-gray-400': 'text-black dark:text-white' }`}>
               {post.isHidden ? 'This post is hidden.' : post.title }
             </h1>
             <p className="text-gray-600 mt-2 dark:text-white">{post.description}</p>
