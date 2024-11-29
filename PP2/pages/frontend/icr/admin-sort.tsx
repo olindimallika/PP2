@@ -52,7 +52,7 @@ const AdminSort: React.FC = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-8">
+    <div className="flex flex-col min-h-screen dark:bg-zinc-800 dark:text-white text-black bg-gray-100 p-8">
       <h1 className="text-2xl font-bold mb-4">Content with the Most Reports</h1>
       
       <section className="mb-8">
@@ -64,12 +64,12 @@ const AdminSort: React.FC = () => {
             {blogPosts.map((post) => (
               <li
                 key={post.id}
-                className="p-4 border rounded-lg hover:bg-gray-100 cursor-pointer"
+                className="p-4 border rounded-lg hover:bg-zinc-400 cursor-pointer"
                 onClick={() => navigateToBlogPost(post.id)}
               >
-                <h3 className="font-bold">{post.title}</h3>
-                <p className="text-gray-600">{post.description}</p>
-                <p className="text-sm text-gray-500">
+                <h3 className="font-bold dark:text-white">{post.title}</h3>
+                <p className="text-black dark:text-white">{post.description}</p>
+                <p className="text-sm text-black dark:text-white">
                   Reports: {post._count?.reports || 0}
                 </p>
               </li>
@@ -87,11 +87,11 @@ const AdminSort: React.FC = () => {
             {comments.map((comment) => (
               <li
                 key={comment.id}
-                className="p-4 border rounded-lg hover:bg-gray-100 dark:bg-black cursor-pointer"
+                className="p-4 border rounded-lg hover:bg-zinc-400 cursor-pointer"
                 onClick={() => navigateToComment(comment.blogPostId, comment.id)}
               >
-                <p className="text-gray-600">{comment.content}</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-black dark:text-white">{comment.content}</p>
+                <p className="text-sm text-black dark:text-white">
                   Reports: {comment._count?.reports || 0}
                 </p>
               </li>
