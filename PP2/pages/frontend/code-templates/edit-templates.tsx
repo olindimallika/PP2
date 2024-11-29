@@ -138,9 +138,9 @@ const EditTemplate: React.FC = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8">
-                    <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-                        <h1 className="text-2xl font-bold text-center mb-6 text-black">Edit Code Template</h1>
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8">
+                    <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg dark:bg-zinc-900">
+                        <h1 className="text-2xl font-bold text-center mb-6 text-black dark:text-white">Edit Code Template</h1>
                         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
                         {message && <p className="text-green-500 text-center mb-4">{message}</p>}
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -151,7 +151,7 @@ const EditTemplate: React.FC = () => {
                                 value={template.title}
                                 onChange={handleInputChange}
                                 required
-                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:text-white dark:bg-zinc-700"
                             />
                             <textarea
                                 name="explanation"
@@ -159,7 +159,7 @@ const EditTemplate: React.FC = () => {
                                 value={template.explanation}
                                 onChange={handleInputChange}
                                 required
-                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:text-white dark:bg-zinc-700"
                                 rows={4}
                             />
                             <textarea
@@ -168,7 +168,7 @@ const EditTemplate: React.FC = () => {
                                 value={template.code}
                                 onChange={handleInputChange}
                                 required
-                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-900 dark:text-white dark:bg-zinc-700"
                                 rows={6}
                             />
                             <input
@@ -177,7 +177,7 @@ const EditTemplate: React.FC = () => {
                                 placeholder="Tags (comma-separated)"
                                 value={template.tags}
                                 onChange={handleInputChange}
-                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="text-black w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:text-white dark:bg-zinc-700"
                             />
                             <button
                                 type="submit"

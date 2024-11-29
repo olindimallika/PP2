@@ -101,11 +101,10 @@ const SearchTemplates: React.FC = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8">
-                    <div className="flex flex-col items-center justify-center bg-white dark:bg-zinc-900 shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-y-8">
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-zinc-800 py-8"> 
+                    <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-y-8 dark:bg-zinc-900">
                         <h1 className="text-2xl font-bold text-center mb-6 text-black dark:text-white">Search All Templates</h1>
-
-                        <form onSubmit={getSearchedTemplates} className="space-y-6 w-full">
+                        <form onSubmit={getSearchedTemplates} className="space-y-6">
                             <input
                                 id="title-bar"
                                 type="text"
@@ -113,7 +112,7 @@ const SearchTemplates: React.FC = () => {
                                 placeholder="Search by title"
                                 value={titleQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTitleQuery(e.target.value)}
-                                className="w-full p-3 border text-black dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
                             />
                             <input
                                 id="exp-bar"
@@ -145,33 +144,77 @@ const SearchTemplates: React.FC = () => {
 
                         {/* Show search results if any */}
                         {templateStates.length > 0 && (
-                            <div className="w-full mt-8">
-                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100 dark:bg-violet-800 dark:text-white">
+                            <div className="w-full">
+                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100 dark:bg-violet-800 dark:text-white">                                    
                                     Search Results
                                 </h2>
                                 <ul className="space-y-4">
                                     {templateStates.map((temp) => (
-                                        <li key={temp.id} className="p-4 border dark:border-gray-600 rounded-lg shadow-sm dark:bg-zinc-800">
-                                            <h3 className="text-black dark:text-white text-lg font-bold">{temp.title}</h3>
+                                        <li key={temp.id} className="p-4 border rounded-lg shadow-sm">
+                                            <h3 className="text-black dark:text-white text-lg font-bold">{temp.title}</h3>                                            
                                             <p className="text-sm text-gray-600 dark:text-gray-300">Template ID: {temp.id}</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">{temp.explanation}</p>
-                                            <div className="relative bg-gray-50 dark:bg-zinc-700 rounded-lg p-6 pt-10 h-48 overflow-scroll">
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">Description: {temp.explanation}</p>
+                                            
+                                            {/* Code Block Container */}
+                                            <div className="relative bg-gray-50 rounded-lg dark:bg-zinc-800 p-6 pt-10 h-48 overflow-scroll">
                                                 <pre>
-                                                    <code className="text-sm text-violet-500 whitespace-pre dark:text-violet-300">{temp.code}</code>
+                                                    <code
+                                                        id="code-block"
+                                                        className="text-sm text-violet-300 whitespace-pre">
+                                                            {temp.code}
+                                                    </code>
                                                 </pre>
-                                                <button
-                                                    onClick={() => handleCopy(temp.id, temp.code)}
-                                                    className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-1 rounded dark:bg-blue-400 dark:text-white"
-                                                >
-                                                    {temp.copied ? "Copied" : "Copy"}
-                                                </button>
+
+                                                {/* Copy Button */}
+                                                <div className="absolute top-2 end-2">
+                                                    <button
+                                                        onClick={() => handleCopy(temp.id, temp.code)}
+                                                        className="text-gray-900 dark:text-gray-400 m-0.5 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border"
+                                                    >
+                                                        {temp.copied ? (
+                                                            /* when copy button is clicked while user is viewing templates*/
+                                                            <span className="inline-flex items-center">
+                                                                <svg
+                                                                    className="w-3 h-3 text-blue-700 dark:text-blue-500 me-1.5"
+                                                                    fill="none"
+                                                                    viewBox="0 0 16 12">
+                                                                    <path
+                                                                        stroke="currentColor"
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M1 5.917 5.724 10.5 15 1.5"/>
+                                                                </svg>
+                                                                <span className="text-xs font-semibold text-blue-700 dark:text-blue-500">
+                                                                    Copied
+                                                                </span>
+                                                            </span>
+                                                        ) : (
+                                                            /* default state of copy button */
+                                                            <span className="inline-flex items-center">
+                                                                <svg
+                                                                    className="w-3 h-3 me-1.5"
+                                                                    fill="currentColor"
+                                                                    viewBox="0 0 18 20"
+                                                                >
+                                                                    <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
+                                                                </svg>
+                                                                <span 
+                                                                    className="text-xs font-semibold">
+                                                                        Copy code
+                                                                </span>
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <p className="text-sm mt-2 text-black dark:text-white ">
+
+                                            <p className="text-sm mt-2 text-black dark:text-white">
                                                 <strong>Tags:</strong> {temp.tags.map((tag: any) => tag.name).join(", ")}
                                             </p>
                                             <button
                                                 onClick={() => handleModify(temp.id)}
-                                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-400 dark:hover:bg-blue-500"
+                                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                                             >
                                                 Modify
                                             </button>
@@ -191,12 +234,14 @@ const SearchTemplates: React.FC = () => {
                                     <button
                                         onClick={handleNextPage}
                                         disabled={currentPage === totalPages}
-                                        className={`px-4 py-2 bg-gray-300 dark:text-black rounded-lg ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-zinc-600"}`}
+                                        className={`px-4 py-2 bg-gray-300 rounded-lg ${
+                                            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"
+                                        }`}
                                     >
                                         Next
                                     </button>
                                 </div>
-                                <p className="text-sm text-gray-500 mt-2 text-center dark:text-gray-400">
+                                <p className="text-sm text-gray-500 mt-2 text-center">
                                     Page {currentPage} of {totalPages}
                                 </p>
                             </div>

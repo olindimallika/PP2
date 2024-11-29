@@ -9,6 +9,7 @@ export default function SearchSavedTemplates() {
 
     const [viewError, setViewError] = React.useState("");
     const [searchError, setSearchError] = React.useState("");
+    const [searchTriggered, setSearchTriggered] = useState(false); // Track if search has been triggered
     const [loading, setLoading] = useState<boolean>(false);
 
     const [action, setAction] = React.useState("Select an action");
@@ -25,7 +26,11 @@ export default function SearchSavedTemplates() {
         searchedTemplates.map((temp) => ({ ...temp, copied: false }))
     );
 
-    const handleSubmitView = async () => {
+    const [currentPage, setCurrentPage] = useState(1); // Track current page
+    const [totalPages, setTotalPages] = useState(0); // Track total pages
+    const pageSize = 3; // Number of templates per page
+
+    const handleSubmitView = async (page = 1) => {
         if (loading) return; // prevent multiple requests
         setLoading(true);
 
@@ -38,13 +43,13 @@ export default function SearchSavedTemplates() {
         }
     
         try {
-            const response = await fetch(`/api/code-templates/search-saved?userId=${id}`, {
+            const response = await fetch(`/api/code-templates/search-saved?userId=${id}&page=${page}&pageSize=${pageSize}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                     'Cache-Control': 'no-cache'
-                }
+                },
             });
 
             if (!response.ok) {
@@ -56,8 +61,9 @@ export default function SearchSavedTemplates() {
             }
 
             const data = await response.json();
-
             setViewTemplates(data.savedTemplates);
+            setCurrentPage(data.currentPage);
+            setTotalPages(data.totalPages);
             setViewError('');
     
         } catch (err: any) {
@@ -67,7 +73,7 @@ export default function SearchSavedTemplates() {
         }
     };
 
-    const handleSubmitSearch = async () => {
+    const handleSubmitSearch = async (page = 1) => {
         const id = localStorage.getItem('userId'); 
         const token = localStorage.getItem('accessToken');
         if (!token) {
@@ -86,6 +92,8 @@ export default function SearchSavedTemplates() {
                     titleQuery, 
                     explanationQuery,
                     tagQuery,
+                    page,
+                    pageSize,
                 }),
             });
         
@@ -98,8 +106,9 @@ export default function SearchSavedTemplates() {
             }
 
             const data = await response.json();
-
             setSearchTemplates(data.savedTemplates);
+            setCurrentPage(data.currentPage);
+            setTotalPages(data.totalPages);
             setSearchError('');
         
         } catch (err: any) {
@@ -108,12 +117,30 @@ export default function SearchSavedTemplates() {
     };
 
     const getSavedTemplates = () => {
-        handleSubmitView();
+        handleSubmitView(1);
     };
 
     const getSearchedTemplates = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault(); // stop the page from reloading
-        handleSubmitSearch(); 
+        setSearchTriggered(true); // Set searchTriggered to true when the form is submitted
+        handleSubmitSearch(1); 
+    };
+
+    // Handle pagination controls
+    const handlePreviousPage = (action: string) => {
+        if (currentPage > 1 && action === "search") {
+            handleSubmitSearch(currentPage - 1);
+        } else if (currentPage > 1 && action === "view") {
+            handleSubmitView(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = (action: string) => {
+        if (currentPage < totalPages  && action === "search") {
+            handleSubmitSearch(currentPage + 1);
+        } else if (currentPage < totalPages && action === "view") {
+            handleSubmitView(currentPage + 1);
+        }
     };
 
     const redirectToLogIn = () => {
@@ -206,12 +233,12 @@ export default function SearchSavedTemplates() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8 dark:bg-slate-800">
-                    <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-4">
+                <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-8 dark:bg-zinc-800">
+                    <div className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg p-8 w-full max-w-lg whitespace-pre-line gap-4 dark:bg-zinc-900">
                         {/* Dropdown for either saving or searching saved templates */}
                         <select 
                             id="manage" 
-                            className="h-10 md:h-16 text-white bg-blue-500 hover:bg-blue-600 rounded-lg w-4/5" 
+                            className="h-10 md:h-16 text-white text-l bg-blue-500 hover:bg-blue-600 rounded-lg w-4/5" 
                             value={action} 
                             onChange={handleChange}>
 
@@ -249,7 +276,9 @@ export default function SearchSavedTemplates() {
                         {/* Show view results if any */}
                         {viewTemplates.length > 0 && (
                             <div className="w-full">
-                                <h2 className="text-gray-500 text-xl font-semibold mb-4">Your Saved Templates:</h2>
+                                <h2 className="mt-4 text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100 dark:bg-violet-800 dark:text-white">                                    
+                                    Your Saved Templates
+                                </h2>   
                                 <div className="m-4 flex space-x-4">
                                     <button
                                         onClick={() => handleManage()}
@@ -261,25 +290,23 @@ export default function SearchSavedTemplates() {
                                 <ul className="space-y-4">
                                     {viewTemplates.map((temp) => (
                                         <li key={temp.id} className="p-4 border rounded-lg shadow-sm">
-                                            <h3 className="text-black text-lg font-bold">{temp.title}</h3>
-                                            <p className="text-sm text-gray-600 font-bold">Template ID: {temp.id}</p>
-                                            <p className="text-sm text-gray-600">{temp.explanation}</p>
-                                            <p className="text-gray-600">
-
-                                                {/* Code Block Container */}
-                                                <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
-                                                    <div className="overflow-x-scroll max-h-full">
-                                                        <pre>
-                                                            <code
+                                            <h3 className="text-black dark:text-white text-lg font-bold">{temp.title}</h3>
+                                            <p className="text-sm dark:text-gray-300 text-gray-600 font-bold">Template ID: {temp.id}</p>
+                                            <p className="text-sm dark:text-gray-300 text-gray-600">Description: {temp.explanation}</p>
+                                            {/* Code Block Container */}
+                                            <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
+                                                <div className="overflow-scroll max-h-full">
+                                                    <pre>
+                                                        <code
                                                             id="code-block"
                                                             className="text-sm text-violet-300 whitespace-pre">
                                                                 {temp.code}
-                                                            </code>
-                                                        </pre>
-                                                    </div>
+                                                        </code>
+                                                    </pre>
+                                                </div>
 
-                                                    {/* Copy Button */}
-                                                    <div className="absolute top-2 end-2 bg-gray-50 dark:bg-gray-700">
+                                                {/* Copy Button */}
+                                                <div className="absolute top-2 end-2">
                                                     <button
                                                         onClick={() => handleCopy(temp.id, temp.code, 'view')}
                                                         className="text-gray-900 dark:text-gray-400 m-0.5 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border">
@@ -318,22 +345,44 @@ export default function SearchSavedTemplates() {
                                                             </span>
                                                         )}
                                                     </button>
-                                                    </div>
                                                 </div>
-                                            </p>
-                                            <p className="text-sm mt-2 text-gray-600">
+                                            </div>
+            
+                                            <p className="text-sm mt-2 text-gray-600 dark:text-white">
                                                 <strong>Tags:</strong>{' '}
                                                 {temp.tags.map((tag: any) => tag.name).join(', ')}
                                             </p>
                                         </li>
                                     ))}
                                 </ul>
+                                {/* Pagination */}
+                                <div className="flex justify-center mt-6 space-x-4">
+                                    <button
+                                        onClick={() => handlePreviousPage("view")} 
+                                        disabled={currentPage === 1}
+                                        className={`px-4 py-2 bg-gray-300 dark:text-black rounded-lg ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-zinc-600"}`}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => handleNextPage("view")}
+                                        disabled={currentPage === totalPages}
+                                        className={`px-4 py-2 bg-gray-300 rounded-lg ${
+                                            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"
+                                        }`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                                <p className="text-sm text-gray-500 mt-2 text-center dark:text-white">
+                                    Page {currentPage} of {totalPages}
+                                </p>
                             </div>
                         )}
                         
                         {/* no results message */}
                         {action === "View Existing Templates" && viewTemplates.length === 0 && !viewError && (
-                            <p className="text-gray-600 text-center mt-6">No templates saved.</p>
+                            <p className="text-gray-600 text-center mt-6 dark:text-white ">No templates saved.</p>
                         )}
 
                         {/* Search Saved Templates */}  
@@ -346,7 +395,7 @@ export default function SearchSavedTemplates() {
                                 placeholder="Search by title"
                                 value={titleQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTitleQuery(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 invisible"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white invisible"
                             />
                             {/* explanation search input */}
                             <input
@@ -356,7 +405,7 @@ export default function SearchSavedTemplates() {
                                 placeholder="Search by explanation"
                                 value={explanationQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setExplanationQuery(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 invisible"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white invisible"
                             />
                             {/* tag search input */}
                             <input
@@ -366,12 +415,12 @@ export default function SearchSavedTemplates() {
                                 placeholder="Search by tags"
                                 value={tagQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTagQuery(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 invisible"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white invisible"
                             />
                             <button 
                                 id="search-button"
                                 type="submit"
-                                className="text-white block w-full p-4 ps-10 rounded-lg bg-blue-700 hover:bg-blue-800 invisible">
+                                className="text-white block w-full p-4 ps-10 rounded-lg bg-blue-700 hover:bg-blue-800 invisible dark:bg-blue-500 dark:hover:bg-blue-600">
                                 {"Search"}
                             </button> 
 
@@ -402,32 +451,32 @@ export default function SearchSavedTemplates() {
                         {/* Show search results if any */}
                         {searchTemplates.length > 0 && (
                             <div className="w-full">
-                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center">Search Results</h2>
+                                <h2 className="text-gray-600 text-xl font-semibold mb-4 text-center bg-violet-100 dark:bg-violet-800 dark:text-white">                                    
+                                    Search Results
+                                </h2>                               
                                 <ul className="space-y-4">
                                     {searchTemplates.map((temp) => (
                                         <li key={temp.id} className="p-4 border rounded-lg shadow-sm">
-                                            <h3 className="text-black text-lg font-bold">{temp.title}</h3>
-                                            <p className="text-sm text-gray-600">Template ID: {temp.id}</p>
-                                            <p className="text-sm text-gray-600">{temp.explanation}</p>
-                                            <p className="text-sm text-gray-600">
+                                            <h3 className="text-black dark:text-white text-lg font-bold">{temp.title}</h3>                                            
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">Template ID: {temp.id}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">Description: {temp.explanation}</p>
+                                            
+                                            {/* Code Block Container */}
+                                            <div className="relative bg-gray-50 rounded-lg dark:bg-zinc-800 p-6 pt-10 h-48 overflow-scroll">
+                                                <pre>
+                                                    <code
+                                                        id="code-block"
+                                                        className="text-sm text-violet-300 whitespace-pre">
+                                                            {temp.code}
+                                                    </code>
+                                                </pre>
 
-                                                {/* Code Block Container */}
-                                                <div className="relative bg-gray-50 rounded-lg dark:bg-gray-700 p-6 pt-10 h-48">
-                                                    <div className="overflow-x-scroll max-h-full">
-                                                        <pre>
-                                                            <code
-                                                            id="code-block"
-                                                            className="text-sm text-violet-300 whitespace-pre">
-                                                                {temp.code}
-                                                            </code>
-                                                        </pre>
-                                                    </div>
-
-                                                    {/* Copy Button */}
-                                                    <div className="absolute top-2 end-2 bg-gray-50 dark:bg-gray-700">
+                                                {/* Copy Button */}
+                                                <div className="absolute top-2 end-2">
                                                     <button
                                                         onClick={() => handleCopy(temp.id, temp.code, 'search')}
-                                                        className="text-gray-900 dark:text-gray-400 m-0.5 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border">
+                                                        className="text-gray-900 dark:text-gray-400 m-0.5 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border"
+                                                    >
                                                         {temp.copied ? (
                                                             /* when copy button is clicked while user is searching templates*/
                                                             <span className="inline-flex items-center">
@@ -463,23 +512,44 @@ export default function SearchSavedTemplates() {
                                                             </span>
                                                         )}
                                                     </button>
-                                                    </div>
                                                 </div>
-                                                
-                                            </p>
-                                            <p className="text-sm mt-2 text-black">
+                                            </div>
+                                            <p className="text-sm mt-2 text-black dark:text-white">
                                                 <strong>Tags:</strong>{' '}
                                                 {temp.tags.map((tag: any) => tag.name).join(', ')}
                                             </p>
                                         </li>
                                     ))}
                                 </ul>
+
+                                {/* Pagination */}
+                                <div className="flex justify-center mt-6 space-x-4">
+                                    <button
+                                        onClick={() => handlePreviousPage("search")}
+                                        disabled={currentPage === 1}
+                                        className={`px-4 py-2 bg-gray-300 dark:text-black rounded-lg ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-zinc-600"}`}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => handleNextPage("search")}
+                                        disabled={currentPage === totalPages}
+                                        className={`px-4 py-2 bg-gray-300 rounded-lg ${
+                                            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"
+                                        }`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                                <p className="text-sm text-gray-500 mt-2 text-center dark:text-white">
+                                    Page {currentPage} of {totalPages}
+                                </p>
                             </div>
                         )}
                         
-                        {/* no results message */}
-                        {action === "Search Saved Templates" && searchTemplates.length === 0 && !searchError && (titleQuery || explanationQuery || tagQuery) && (
-                            <p className="text-gray-600 text-center mt-6">No results found for your search.</p>
+                        {/* No results message */}
+                        {searchTriggered && searchTemplates.length === 0 && !searchError && (
+                            <p className="text-gray-600 text-center mt-6 dark:text-gray-400">No results found for your search.</p>
                         )}
 
                     </div>
