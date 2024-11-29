@@ -106,13 +106,13 @@ const CreateBlogForm: React.FC = () => {
     // Redirect user to log in and save form data before navigating
     const redirectToLogIn = () => {
         localStorage.setItem('createBlogForm', JSON.stringify(formData));
-        router.push(`/frontend/accounts/log-in?callback=/create-blog`);
+        router.push(`/frontend/accounts/log-in?callback=/frontend/blog-posts/create-blog`);
     };
 
     // Redirect user to sign up and save form data before navigating
     const redirectToSignUp = () => {
         localStorage.setItem('createBlogForm', JSON.stringify(formData));
-        router.push(`/frontend/accounts/sign-up?callback=/create-blog`);
+        router.push(`/frontend/accounts/sign-up?callback=/frontend/blog-posts/create-blog`);
     };
 
     // Programmatically navigate to the template page
