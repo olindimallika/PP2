@@ -3,7 +3,7 @@ import { AppProps } from 'next/app';
 import '../styles/styles.css';
 import '../styles/globals.css';
 import Header from './header'; // Ensure this path is correct
-import { AuthProvider } from './auth-context'; // Update the path to your AuthContext file
+import { AuthProvider } from '../auth-context'; // Update the path to your AuthContext file
 import Input from './frontend/code-writing-and-execution/input'; 
 import ModifyTemplate from './frontend/code-templates/modify-template';
 import { useRouter } from 'next/router';

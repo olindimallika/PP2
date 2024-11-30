@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from './auth-context'; // Update the path to your AuthContext
+import { useAuth } from '../auth-context'; // Update the path to your AuthContext
 
 type HeaderProps = {
    toggleDarkMode: () => void;
