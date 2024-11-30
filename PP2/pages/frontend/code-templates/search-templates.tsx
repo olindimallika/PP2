@@ -112,7 +112,7 @@ const SearchTemplates: React.FC = () => {
                                 placeholder="Search by title"
                                 value={titleQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTitleQuery(e.target.value)}
-                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 text-black dark:text-white"
                             />
                             <input
                                 id="exp-bar"
@@ -121,7 +121,7 @@ const SearchTemplates: React.FC = () => {
                                 placeholder="Search by explanation"
                                 value={explanationQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setExplanationQuery(e.target.value)}
-                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 text-black dark:text-white"
                             />
                             <input
                                 id="tag-bar"
@@ -130,7 +130,7 @@ const SearchTemplates: React.FC = () => {
                                 placeholder="Search by tags"
                                 value={tagQuery}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setTagQuery(e.target.value)}
-                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white"
+                                className="w-full p-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-zinc-700 dark:text-white text-black"
                             />
                             <button
                                 id="search-button"
