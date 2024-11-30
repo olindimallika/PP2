@@ -70,7 +70,8 @@ export class DockerRuntime {
             dockerfile: 'runtime-go',
             fileExtension: '.go',
             compileCmd: ['go', 'build', '-o', '/app/code.out', '/app/code.go'],
-            runCmd: ['/app/code.out']
+            // Modified to use shell command to pipe input from input.txt
+            runCmd: ['sh', '-c', 'cat /app/input.txt | /app/code.out']
         },
         java: {
             dockerfile: 'runtime-java',
@@ -78,16 +79,6 @@ export class DockerRuntime {
             compileCmd: ['sh', '-c', 'cd /app && javac Main.java'],
             runCmd: ['sh', '-c', 'cd /app && java Main']
         },
-        // javascript: {
-        //     dockerfile: 'runtime-javascript',
-        //     fileExtension: '.js',
-        //     runCmd: ['sh', '-c', 
-        //         'name=$(head -n1 /app/input.txt); ' +
-        //         'language=$(tail -n1 /app/input.txt); ' +
-        //         'echo "console.log(\\\"Hello, $name! I see you like $language.\\\");" > /app/modified_code.js && ' +
-        //         'exec node /app/modified_code.js'  // Added 'exec' to replace the shell process
-        //     ]
-        // },
         javascript: {
             dockerfile: 'runtime-javascript',
             fileExtension: '.js',
@@ -448,6 +439,7 @@ export class DockerRuntime {
             }
         }
     }
+    // Logic by chatgpt, prompt was "Allow users to execute code and run it"
     private cleanOutput(output: string): string {
         return output
             .replace(/^[^\w\n]*\.\s*/, '') // Remove leading special characters or a period
@@ -462,6 +454,7 @@ export class DockerRuntime {
             .map(line => line.trim()) // Trim each line to remove stray spaces
             .join('\n'); // Join the lines back with a single newline character
     }
+
 
     
     
