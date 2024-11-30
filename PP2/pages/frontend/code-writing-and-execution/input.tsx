@@ -268,17 +268,17 @@ const Input: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
     };
 
     return (
-        <div id="background" className="flex flex-col items-center justify-center min-h-screen dark:bg-zinc-800 bg-gray-100 py-8">
-            <div className="w-10/12 max-w-screen-xl m-14 m-auto p-5 bg-white shadow-md rounded-lg h-full">
-                <h1 className="text-xl font-bold text-center text-stone-800">Code Execution</h1>
+        <div id="background" className="flex flex-col items-center justify-center min-h-screen dark:bg-zinc-700 bg-gray-100 py-8">
+            <div className="w-10/12 max-w-screen-xl m-14 m-auto p-5 bg-white dark:bg-black shadow-md rounded-lg h-full">
+                <h1 className="text-xl font-bold text-center text-zince-700 dark:text-white text-black">Code Execution</h1>
                 <form onSubmit={handleSubmit}>
-                    <div className="flex gap-5 mb-5 bg-white">
+                    <div className="flex gap-5 mb-5 dark:bg-black bg-white">
                         <div className="flex-1">
-                            <label className="block mb-2 text-stone-800 text-base font-bold" htmlFor="language">
+                            <label className="block mb-2 text-stone-800 dark:text-white text-base font-bold" htmlFor="language">
                                 Language:
                             </label>
                             <select 
-                                className="w-full p-3 mb-2.5 border border-solid border-neutral-200 rounded-md text-stone-800 text-base" 
+                                className="w-full p-3 mb-2.5 border border-solid border-neutral-200 rounded-md text-stone-800 text-base text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white" 
                                 id="language" 
                                 value={language} 
                                 onChange={handleLanguageChange}
@@ -296,7 +296,7 @@ const Input: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
                                 <option value="ruby">Ruby</option>
                             </select>
 
-                            <label className="block mb-2 text-stone-800 text-base font-bold" htmlFor="code">
+                            <label className="block mb-2 text-stone-800 dark:text-white text-base font-bold" htmlFor="code">
                                 Code:
                             </label>
                             <CodeMirror
@@ -324,12 +324,12 @@ const Input: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
                             >
                                 {isLoading ? 'Running...' : 'Run'}
                             </button>
-                            <label className="block mb-2 mt-4 text-stone-800 text-base font-bold" htmlFor="input">
+                            <label className="block mb-2 mt-4 text-stone-800 dark:text-white text-base font-bold" htmlFor="input" >
                                 Input (stdin):
                             </label>
                             <textarea
                                 id="input"
-                                className="w-full p-2.5 mb-2.5 border border-solid border-neutral-200 rounded-md font-mono text-base resize-vertical min-h-[100px]"
+                                className="w-full p-2.5 mb-2.5 border border-solid border-neutral-200 rounded-md font-mono text-base resize-vertical min-h-[100px] text-black dark:border-gray-600 dark:bg-zinc-700 dark:text-white"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Enter input for your program..."

@@ -33,6 +33,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-syntax-highlighter": "^15.6.1",
+    "uuid": "^11.0.3",
     "vm2": "^3.9.19"
   },
   "devDependencies": {
