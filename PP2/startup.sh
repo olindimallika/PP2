@@ -7,6 +7,7 @@ npx prisma generate
 npm install uuid
 npm install codemirror
 npm install uuid
+npm install dockerode
 
 # Step 2: Run Prisma migrations to set up the database
 echo "Running Prisma migrations..."
