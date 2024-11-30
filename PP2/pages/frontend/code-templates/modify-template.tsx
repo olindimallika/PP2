@@ -12,6 +12,17 @@ import { rust } from "@codemirror/lang-rust";
 import { sql } from '@codemirror/lang-sql';
 import { EditorView } from "@codemirror/view";
 
+interface ExecutionError {
+    type: string;
+    message: string;
+}
+
+interface ExecutionResponse {
+    output?: string;
+    errorType?: string;
+    message?: string;
+}
+
 const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
     const [modifiedCode, setModifiedCode] = useState<string>('');
 
@@ -33,7 +44,7 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
     const [language, setLanguage] = useState<string>('javascript');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [output, setOutput] = useState<string>('');
-    const [codeError, setCodeError] = useState<{ type: string; message: string } | null>(null);
+    const [codeError, setCodeError] = useState<ExecutionError | null>(null);
 
     const theme = darkMode ? "dark" : "light";
 
@@ -122,6 +133,7 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
     };
 
     const handleRun = async () => {
+        
         setIsLoading(true);
         setCodeError(null);
         setOutput('');
@@ -129,23 +141,27 @@ const ModifyTemplate: React.FC<{ darkMode: boolean }> = ( {darkMode } ) => {
         const code = template.code;
 
         try {
-            const response = await fetch('/api/code-writing-and-execution/write-code', {
+            const response = await fetch('/api/code-writing-and-execution/input', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ code, language }),
+                body: JSON.stringify({ code, language, input:"" }),
             });
       
-            const result = await response.json();
-      
+            const result: ExecutionResponse = await response.json();
+
             if (response.ok) {
-                setOutput(result.stdout || 'Execution successful, but no output.');
+                setOutput(result.output || 'Execution successful, but no output.');
+                setCodeError(null);
             } else {
                 setCodeError({
                     type: result.errorType || 'UnknownError',
                     message: result.message || 'An unknown error occurred.',
                 });
+                if (result.output) {
+                    setOutput(result.output);
+                }
             }
         } catch (err) {
             setCodeError({
