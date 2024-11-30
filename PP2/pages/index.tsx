@@ -2,7 +2,6 @@ import React from 'react';
 import SearchBlogPosts from './frontend/blog-posts/search-blog';
 import SearchTemplates from './frontend/code-templates/search-templates';
 import SortedBlog from './frontend/blog-posts/sorted';
-import TopTemplates from './frontend/code-templates/top-templates';
 
 const Home: React.FC<{ darkMode: boolean }> = () => {
   return (
@@ -26,7 +25,6 @@ const Home: React.FC<{ darkMode: boolean }> = () => {
           {/* Right Column: SearchTemplates, Top 3 Templates */}
           <div className="flex flex-col gap-5 w-full md:w-1/2">
             <SearchTemplates />
-            <TopTemplates />
           </div>
         </div>
       </main>
