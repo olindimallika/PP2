@@ -21,6 +21,7 @@ interface ExecutionResponse {
     output?: string;
     errorType?: string;
     message?: string;
+    error?: string;
 }
 
 const Input: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
@@ -67,51 +68,57 @@ const Input: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
         setCode(defaultCode[newLang] || '');
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Update the fetch call in handleSubmit:
+const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        if (!code || !language) {
-            setError({ type: 'InputError', message: 'Code and language are required.' });
+    if (!code || !language) {
+        setError({ type: 'InputError', message: 'Code and language are required.' });
+        return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setOutput('');
+
+    try {
+        const response = await fetch('/api/code-writing-and-execution/try', {  // Updated endpoint
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code, language, input }),
+        });
+
+        const result: ExecutionResponse = await response.json();
+
+        if (!response.ok) {
+            setError({
+                type: result.errorType || 'ExecutionError',
+                message: result.error || result.message || 'Execution failed'
+            });
+            console.log('Full error:', result); // For debugging
             return;
         }
 
-        setIsLoading(true);
-        setError(null);
-        setOutput('');
-
-        try {
-            const response = await fetch('/api/code-writing-and-execution/input', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ code, language, input }),
-            });
-
-            const result: ExecutionResponse = await response.json();
-
-            if (response.ok) {
-                setOutput(result.output || 'Execution successful, but no output.');
-                setError(null);
-            } else {
-                setError({
-                    type: result.errorType || 'UnknownError',
-                    message: result.message || 'An unknown error occurred.',
-                });
-                if (result.output) {
-                    setOutput(result.output);
-                }
-            }
-        } catch (err) {
+        if (!response.ok) {
             setError({
-                type: 'NetworkError',
-                message: 'Failed to connect to the server. Please try again later.',
+                type: "Code Error",
+                message: 'An unknown error occurred.',
             });
-        } finally {
-            setIsLoading(false);
+            return;
         }
-    };
 
+        setOutput(result.output || '');
+    } catch (err) {
+        setError({
+            type: 'NetworkError',
+            message: 'Failed to connect to the server.',
+        });
+    } finally {
+        setIsLoading(false);
+    }
+};
     return (
         <div id="background" className="flex flex-col items-center justify-center min-h-screen dark:bg-zinc-700 bg-gray-100 py-8">
             <div className="w-10/12 max-w-screen-xl m-14 m-auto p-5 bg-white dark:bg-black shadow-md rounded-lg h-full">

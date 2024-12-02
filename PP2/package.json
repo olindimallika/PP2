@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "node prisma/seed.js"
@@ -19,8 +19,11 @@
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/lang-rust": "^6.0.1",
     "@codemirror/lang-sql": "^6.8.0",
+    "@codesandbox/sandpack-react": "^2.19.10",
     "@prisma/client": "^5.21.1",
     "@uiw/react-codemirror": "^4.23.6",
+    "@wasmer/wasi": "^1.2.2",
+    "@wasmer/wasmfs": "^0.12.0",
     "autoprefixer": "^10.4.20",
     "bcrypt": "^5.1.1",
     "codemirror": "^6.0.1",
@@ -31,6 +34,7 @@
     "pidusage": "^3.0.2",
     "prisma": "^5.21.1",
     "prismjs": "^1.29.0",
+    "pyodide": "^0.26.4",
     "react": "^18",
     "react-dom": "^18",
     "react-syntax-highlighter": "^15.6.1",
